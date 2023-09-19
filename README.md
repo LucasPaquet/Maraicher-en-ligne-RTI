@@ -1,5 +1,22 @@
 # Maraicher-en-ligne-RTI
 
+L’application à réaliser est une application 
+d’achats en ligne de fruits/légumes intitulée 
+« Le Maraicher en ligne ». 
+Les clients du « Maraicher en ligne » doivent 
+se logger à partir d’une application « desktop »
+avant de pouvoir naviguer dans le catalogue du 
+magasin en ligne et faire leurs achats. Ces 
+achats sont stockés dans un panier virtuel
+avant d’être validé par le client. 
+Afin d’obtenir sa commande, le client devra 
+tout d’abord payer la facture générée lors de sa 
+session d’achat :
+
+* Une première possibilité pour lui est de se rendre physiquement au comptoir du magasin où il s’adressera à un employé. Il pourra alors s’acquitter de sa facture auprès de cet employé avant de repartir avec sa commande de fruits et légumes. 
+
+* Une seconde possibilité sera de réaliser le paiement en ligne en utilisant une autre application « desktop » permettant un traitement sécurisé de sa facture. Il pourra ensuite se rendre physiquement au magasin pour récupérer sa commande. La gestion et le réapprovisionnement du stock de marchandises seront réalisés par un gérant qui utilisera soit son PC, soit une tablette via une application web dédiée.
+
 # Partie 1
 Cette partie comporte les éléments suivants :
 * la construction d’une libraire de sockets en C/C++
