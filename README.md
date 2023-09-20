@@ -63,3 +63,19 @@ Le nombre de threads du pool ainsi que le PORT_ACHAT pourront être lus dans un 
 Pour la construction du protocole (trame, …), vous devez savoir que dans la second partie, un 
 client Java similaire devra être développé. Ce protocole s’appellera « Online VEgetables 
 Shopping Protocol » (OVESP).
+
+# Partie 2 
+Cette partie comporte les éléments suivants : 
+* le client Java pour le serveur Achat 
+* le Java Bean d’accès à la base de données construit en utilisant JDBC 
+* le serveur « Paiement » multi-threads Java, utilisant le bean développé 
+* le client Java « Paiement » capable de communiquer avec ce serveur
+
+## L’application « Client Achat » Java
+Vous devez donc développer ici une application fenêtrée en Java (Swing) capable d’interagir 
+avec le « Serveur Achat » déjà développé et similaire visuellement à celle fournie en Qt. Le 
+serveur ne doit en aucune façon faire de différence entre le client C et le client Java, et ne doit 
+se rendre compte de rien. Cette application sera utilisée par les clients du magasin ne 
+disposant que d’une machine Windows avec Java installé.
+
+## Le Java Bean d’accès à la base de données
