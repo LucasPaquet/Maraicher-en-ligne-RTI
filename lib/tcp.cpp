@@ -8,75 +8,123 @@
 
 #include "tcp.h"
 
-int ServerSocket(int port)
+int ServerSocket(int portTemp)
 {
-	int s;
+    int s;
 
-	printf("pid = %d\n",getpid());
+    printf("pid = %d\n", getpid());
 
-	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
-		perror("Erreur de socket()");
-	 	exit(1);
-	}
-	printf("socket creee = %d\n",s);
+    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        perror("Erreur de socket()");
+        exit(1);
+    }
+    printf("socket creee = %d\n", s);
+
+    // Pour la recherche
+    struct addrinfo hints;
+    struct addrinfo *results;
+
+    // Pour l'affichage des resultats
+    char host[NI_MAXHOST];
+    char port[NI_MAXSERV];
+
+    struct addrinfo* info;
+
+    // On fournit l'hote et le service
+    char portStr[6]; // Pour stocker le numéro de port sous forme de chaîne
+    snprintf(portStr, sizeof(portStr), "%d", portTemp); // Convertit le portTemp en chaîne
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // Pour permettre la liaison sur toutes les interfaces
+    printf("Pour le port %d :\n", portTemp);
+
+    if (getaddrinfo(NULL, portStr, &hints, &results) != 0)
+        printf("Erreur de getaddrinfo");
+    else
+    {
+        // Affichage du contenu des adresses obtenues au format numérique
+        for (info = results; info != NULL; info = info->ai_next)
+        {
+            getnameinfo(info->ai_addr, info->ai_addrlen,
+                        host, NI_MAXHOST,
+                        port, NI_MAXSERV,
+                        NI_NUMERICSERV | NI_NUMERICHOST);
+            printf("Adresse IP: %s -- Port: %s\n", host, port);
+        }
+
+        freeaddrinfo(results);
+    }
+
+    // Liaison de la socket à l'adresse et au port
+    if (bind(s, results->ai_addr, results->ai_addrlen) == -1)
+    {
+        perror("Erreur de bind()");
+        exit(1);
+    }
+
+    // Écoute sur la socket
+    if (listen(s, SOMAXCONN) == -1)
+    {
+        perror("Erreur de listen()");
+        exit(1);
+    }
+
+    return s; // Retourne la socket d'écoute
+}
 
 
-	// Pour la recherche
+int Accept(int sEcoute,char *ipClient)
+{
+	// Construction de l'adresse
 	struct addrinfo hints;
 	struct addrinfo *results;
+	memset(&hints,0,sizeof(struct addrinfo));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV; // pour une connexion passive
 
-	// Pour l'affichage des resultats
+	if (getaddrinfo(NULL,"50000",&hints,&results) != 0)
+		exit(1);
+
+	// Affichage du contenu de l'adresse obtenue
 	char host[NI_MAXHOST];
-	char portBuffer[NI_MAXSERV];
+	char port[NI_MAXSERV];
+	getnameinfo(results->ai_addr,results->ai_addrlen,
+	host,NI_MAXHOST,port,NI_MAXSERV,NI_NUMERICSERV | NI_NUMERICHOST);
+	printf("Mon Adresse IP: %s -- Mon Port: %s\n",host,port);
 
-	struct addrinfo* info;
+	
 
-	// On fournit l'hote et le service
-	memset(&hints,0,sizeof(struct addrinfo)); // initialisation à 0
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	printf("Pour www.google.be avec le service http :\n");
-
-	if (getaddrinfo("www.google.be","http",&hints,&results) != 0)
-		printf("Erreur de getaddrinfo");
-	else
+	// Mise à l'écoute de la socket
+	if (listen(sEcoute,SOMAXCONN) == -1)
 	{
-		// Affichage du contendu des adresses obtenues au format numérique
-		for (info = results ; info != NULL ; info = info->ai_next)
-		{
-			getnameinfo(info->ai_addr,info->ai_addrlen,
-			host,NI_MAXHOST,
-			portBuffer,NI_MAXSERV,
-			NI_NUMERICSERV | NI_NUMERICHOST);
-			printf("Adresse IP: %s -- Port: %s\n",host,portBuffer);
-		}
-
-		freeaddrinfo(results);
+		perror("Erreur de listen()");
+		exit(1);
 	}
+	printf("listen() reussi !\n");
 
-	// On fournit l'adresse IP et le port directement
-	memset(&hints,0,sizeof(struct addrinfo)); // initialisation à 0
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_NUMERICSERV | AI_NUMERICHOST;
-	printf("Pour 192.168.228.167 avec le port 80 :\n");
-
-	if (getaddrinfo("192.168.228.167","80",&hints,&results) != 0)
-		printf("Erreur de getaddrinfo");
-	else
+	// Attente d'une connexion
+	int sService;
+	if ((sService = accept(sEcoute,NULL,NULL)) == -1)
 	{
-		// Affichage du contendu des adresses obtenues au format "hote" et "service"
-		for (info = results ; info != NULL ; info = info->ai_next)
-		{
-			getnameinfo(info->ai_addr,info->ai_addrlen,
-			host,NI_MAXHOST,
-			portBuffer,NI_MAXSERV,
-			0);
-			printf("Hote: %s -- Service: %s\n",host,portBuffer);
-		}
-
-		freeaddrinfo(results);
+		perror("Erreur de accept()");
+		exit(1);
 	}
+	printf("accept() reussi !");
+	printf("socket de service = %d\n",sService);
+
+	// Recuperation d'information sur le client connecte
+	struct sockaddr_in adrClient;
+	socklen_t adrClientLen;
+	getpeername(sService,(struct sockaddr*)&adrClient,&adrClientLen);
+	getnameinfo((struct sockaddr*)&adrClient,adrClientLen,
+	host,NI_MAXHOST,
+	port,NI_MAXSERV,
+	NI_NUMERICSERV | NI_NUMERICHOST);
+	printf("Client connecte --> Adresse IP: %s -- Port: %s\n",host,port);
+
+
 	return 0;
 }
