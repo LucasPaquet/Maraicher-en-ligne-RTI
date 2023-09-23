@@ -2,14 +2,29 @@
 #include "ui_windowclient.h"
 #include <QMessageBox>
 #include <string>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include "../lib/tcp.h"
+
 using namespace std;
 
 extern WindowClient *w;
 
 #define REPERTOIRE_IMAGES "images/"
 
+void HandlerSIGINT(int s);
+void Echange(char* requete, char* reponse);
+bool OVESP_Login(const char* user, const char* password);
+void OVESP_Logout();
+
+int sClient;
+
 WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::WindowClient)
 {
+
     ui->setupUi(this);
 
     // Configuration de la table du panier (ne pas modifer)
@@ -32,6 +47,27 @@ WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::Wi
     // Exemples à supprimer
     setArticle("pommes",5.53,18,"pommes.jpg");
     ajouteArticleTablePanier("cerises",8.96,2);
+
+    // Armement des signaux
+    struct sigaction A;
+    A.sa_flags = 0;
+    sigemptyset(&A.sa_mask);
+    A.sa_handler = HandlerSIGINT;
+
+    if (sigaction(SIGINT, &A, NULL) == -1)
+    {
+        perror("Erreur de sigaction");
+        exit(1);
+    }
+
+    // Connexion sur le serveur
+    if ((sClient = ClientSocket("127.0.0.1", 50000)) == -1)
+    {
+        perror("Erreur de ClientSocket");
+        exit(1);
+    }
+
+    printf("Connecté sur le serveur.\n");
 }
 
 WindowClient::~WindowClient()
@@ -273,13 +309,29 @@ void WindowClient::closeEvent(QCloseEvent *event)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonLogin_clicked()
 {
+  // Phase de login
+  /*
+  char user[50], password[50];
+  user[strlen(user) - 1] = 0;
+  password[strlen(password) - 1] = 0;
+  */
 
+  if (!OVESP_Login(getNom(), getMotDePasse()))
+      dialogueErreur("Erreur de connection", "Les identifiants sont incorrects !");
+  else
+  {
+    dialogueMessage("Connexion réussi", "Bienvenue");
+    loginOK();
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonLogout_clicked()
 {
-
+  OVESP_Logout();
+  logoutOK();
+  setMotDePasse("");
+  setNom("");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -316,4 +368,116 @@ void WindowClient::on_pushButtonViderPanier_clicked()
 void WindowClient::on_pushButtonPayer_clicked()
 {
 
+}
+
+
+// ***** Fin de connexion ********************************************
+void HandlerSIGINT(int s)
+{
+    printf("\nArrêt du client.\n");
+    OVESP_Logout();
+    close(sClient);
+    exit(0);
+}
+
+// ***** Gestion du protocole OVESP ***********************************
+bool OVESP_Login(const char* user, const char* password)
+{
+    char requete[200], reponse[200];
+    bool onContinue = true;
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "LOGIN#%s#%s", user, password);
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la réponse **************************
+    char* ptr = strtok(reponse, "#"); // entête = LOGIN (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+
+    if (strcmp(ptr, "ok") == 0)
+        printf("Login OK.\n");
+    else
+    {
+        ptr = strtok(NULL, "#"); // raison du ko
+        printf("Erreur de login: %s\n", ptr);
+        onContinue = false;
+    }
+
+    return onContinue;
+}
+
+//*******************************************************************
+void OVESP_Logout()
+{
+    char requete[200], reponse[200];
+    int nbEcrits, nbLus;
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "LOGOUT");
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la réponse **************************
+    // Pas vraiment utile...
+}
+
+//*******************************************************************
+void OVESP_Operation(char op, int a, int b)
+{
+    char requete[200], reponse[200];
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "OPER#%c#%d#%d", op, a, b);
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la réponse **************************
+    char* ptr = strtok(reponse, "#"); // entête = OPER (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+
+    if (strcmp(ptr, "ok") == 0)
+    {
+        ptr = strtok(NULL, "#"); // résultat du calcul
+        printf("Résultat = %s\n", ptr);
+    }
+    else
+    {
+        ptr = strtok(NULL, "#"); // raison du ko
+        printf("Erreur: %s\n", ptr);
+    }
+}
+
+//***** Échange de données entre client et serveur ******************
+void Echange(char* requete, char* reponse)
+{
+    int nbEcrits, nbLus;
+
+    // ***** Envoi de la requête ****************************
+    if ((nbEcrits = Send(sClient, requete, strlen(requete))) == -1)
+    {
+        perror("Erreur de Send");
+        close(sClient);
+        exit(1);
+    }
+
+    // ***** Attente de la réponse **************************
+    if ((nbLus = Receive(sClient, reponse)) < 0)
+    {
+        perror("Erreur de Receive");
+        close(sClient);
+        exit(1);
+    }
+
+    if (nbLus == 0)
+    {
+        printf("Serveur arrêté, pas de réponse reçue...\n");
+        close(sClient);
+        exit(1);
+    }
+
+    reponse[nbLus] = 0;
 }
