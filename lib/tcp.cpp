@@ -156,10 +156,54 @@ int ClientSocket(char* ipServeur, int portServeur)
 
 int Send(int sSocket,char* data,int taille)
 {
-	return 0;
+	if (taille > TAILLE_MAX_DATA)
+		return -1;
+
+	// Preparation de la charge utile
+	char trame[TAILLE_MAX_DATA+2];
+	memcpy(trame,data,taille);
+
+	trame[taille] = '#';
+	trame[taille+1] = ')';
+	// Ecriture sur la socket
+	return write(sSocket,trame,taille+2)-2;
+
 }
 
 int Receive(int sSocket,char* data)
 {
-	return 0;
+	bool fini = false;
+	int nbLus, i = 0;
+	char lu1,lu2;
+
+	while(!fini)
+	{
+		if ((nbLus = read(sSocket,&lu1,1)) == -1)
+			return -1;
+
+		if (nbLus == 0) return i; // connexion fermee par client
+
+		if (lu1 == '#')
+		{
+			if ((nbLus = read(sSocket,&lu2,1)) == -1)
+				return -1;
+
+			if (nbLus == 0) return i; // connexion fermee par client
+			
+			if (lu2 == ')') fini = true;
+			else
+			{
+				data[i] = lu1;
+				data[i+1] = lu2;
+				i += 2;
+			}
+		}
+		else
+		{
+			data[i] = lu1;
+			i++;
+		}
+	}
+	return i;
+
 }
