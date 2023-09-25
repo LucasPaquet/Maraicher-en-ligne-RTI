@@ -4,8 +4,10 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <mysql.h>
 #include "tcp.h"
 #include "ovesp.h"
+
 
 void HandlerSIGINT(int s);
 void TraitementConnexion(int sService);
@@ -19,6 +21,9 @@ int socketsAcceptees[TAILLE_FILE_ATTENTE];
 int indiceEcriture = 0, indiceLecture = 0;
 pthread_mutex_t mutexSocketsAcceptees;
 pthread_cond_t condSocketsAcceptees;
+
+// Connexion SQL
+MYSQL* connexion;
 
 int main(int argc, char* argv[])
 {
@@ -53,6 +58,18 @@ int main(int argc, char* argv[])
     {
         perror("Erreur de ServeurSocket");
         exit(1);
+    }
+
+    // Connection à la base de données SQL
+    connexion = mysql_init(NULL);
+    if (mysql_real_connect(connexion,"localhost","Student","PassStudent1_","PourStudent",0,0,0) == NULL)
+    {
+        fprintf(stderr,"[SQL] Erreur de connexion à la base de données...\n");
+        exit(1);  
+    }
+    else
+    {
+        fprintf(stderr,"[SQL] Connexion a sql reussi...\n");
     }
 
     // Creation du pool de threads
@@ -137,7 +154,8 @@ void HandlerSIGINT(int s)
     }
 
     pthread_mutex_unlock(&mutexSocketsAcceptees);
-    OVESP_Close();
+    OVESP_Close(); // fermer toute les socket client
+    mysql_close(connexion); // fermer la connexion sql
     exit(0);
 }
 
