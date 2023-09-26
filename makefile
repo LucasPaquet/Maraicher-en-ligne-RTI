@@ -12,7 +12,7 @@ Client:	$(OBJECT)/mainclient.o $(OBJECT)/windowclient.o $(OBJECT)/moc_windowclie
 	g++ -Wno-unused-parameter -o Client $(OBJECT)/tcp.o $(OBJECT)/mainclient.o $(OBJECT)/windowclient.o $(OBJECT)/moc_windowclient.o  /usr/lib64/libQt5Widgets.so /usr/lib64/libQt5Gui.so /usr/lib64/libQt5Core.so /usr/lib64/libGL.so -lpthread
 Server:	server.cpp $(OBJECT)/tcp.o $(OBJECT)/ovesp.o
 	echo Creation de Server
-	g++ server.cpp $(OBJECT)/tcp.o $(OBJECT)/ovesp.o -I $(LIB) -o Server -lpthread
+	g++ server.cpp $(OBJECT)/tcp.o $(OBJECT)/ovesp.o -I $(LIB) -o Server -I/usr/include/mysql -m64 -L/usr/lib64/mysql -lmysqlclient -lpthread 
 
 $(OBJECT)/moc_windowclient.o:	$(QT)/moc_windowclient.cpp
 		echo Creation de moc_windowclient.o
