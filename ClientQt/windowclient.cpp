@@ -13,14 +13,16 @@ using namespace std;
 
 extern WindowClient *w;
 
-#define REPERTOIRE_IMAGES "images/"
+#define REPERTOIRE_IMAGES "ClientQt/images/"
 
 void HandlerSIGINT(int s);
 void Echange(char* requete, char* reponse);
 bool OVESP_Login(const char* user, const char* password);
 void OVESP_Logout();
+void OVESP_Consult(int article);
 
 int sClient;
+int articleEnCour = 0; // changer en Struct Article
 
 WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::WindowClient)
 {
@@ -45,7 +47,6 @@ WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::Wi
     setPublicite("!!! Bienvenue sur le Maraicher en ligne !!!");
 
     // Exemples à supprimer
-    setArticle("pommes",5.53,18,"pommes.jpg");
     ajouteArticleTablePanier("cerises",8.96,2);
 
     // Armement des signaux
@@ -337,13 +338,14 @@ void WindowClient::on_pushButtonLogout_clicked()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonSuivant_clicked()
 {
+    OVESP_Consult(articleEnCour+1);
 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonPrecedent_clicked()
 {
-
+    OVESP_Consult(articleEnCour-1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -425,30 +427,41 @@ void OVESP_Logout()
 }
 
 //*******************************************************************
-void OVESP_Operation(char op, int a, int b)
+
+
+void OVESP_Consult(int article)
 {
     char requete[200], reponse[200];
+    int nbEcrits, nbLus, stock, id;
+    char intitule[200];
+    char image[200];
+    char prix[200];
+
 
     // ***** Construction de la requête *********************
-    sprintf(requete, "OPER#%c#%d#%d", op, a, b);
+    sprintf(requete, "CONSULT#%d", article);
 
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);
 
-    // ***** Parsing de la réponse **************************
-    char* ptr = strtok(reponse, "#"); // entête = OPER (normalement...)
+    char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
-
     if (strcmp(ptr, "ok") == 0)
     {
-        ptr = strtok(NULL, "#"); // résultat du calcul
-        printf("Résultat = %s\n", ptr);
+        articleEnCour = atoi(strtok(NULL, "#"));
+        strcpy(intitule, strtok(NULL, "#"));
+        stock = atoi(strtok(NULL, "#"));
+        strcpy(prix, strtok(NULL, "#"));
+        strcpy(image, strtok(NULL, "#"));
+
+        // pour convertir le "."" en "," pour le prix
+        string tmp(prix);
+        size_t x = tmp.find(",");
+        if (x != string::npos) tmp.replace(x,1,".");
+
+        w->setArticle(intitule, stof(tmp), stock, image); // stof() = convertir un string en float
     }
-    else
-    {
-        ptr = strtok(NULL, "#"); // raison du ko
-        printf("Erreur: %s\n", ptr);
-    }
+    
 }
 
 //***** Échange de données entre client et serveur ******************

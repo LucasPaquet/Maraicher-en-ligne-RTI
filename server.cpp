@@ -4,7 +4,7 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <mysql.h>
+
 #include "tcp.h"
 #include "ovesp.h"
 
@@ -189,7 +189,7 @@ void TraitementConnexion(int sService)
         printf("\t[THREAD %p] Requete recue = %s\n", pthread_self(), requete);
 
         // ***** Traitement de la requete ***********
-        onContinue = OVESP(requete, reponse, sService);
+        onContinue = OVESP(requete, reponse, sService, connexion);
 
         // ***** Envoi de la reponse ****************
         if ((nbEcrits = Send(sService, reponse, strlen(reponse))) < 0)

@@ -29,7 +29,7 @@ $(OBJECT)/tcp.o:	$(LIB)/tcp.cpp $(LIB)/tcp.h
 	g++ -c $(LIB)/tcp.cpp -o $(OBJECT)/tcp.o
 $(OBJECT)/ovesp.o:	$(LIB)/ovesp.h $(LIB)/ovesp.cpp
 	echo Creation de ovesp.o
-	g++ -c $(LIB)/ovesp.cpp -o $(OBJECT)/ovesp.o
+	g++ -c $(LIB)/ovesp.cpp -o $(OBJECT)/ovesp.o -I/usr/include/mysql -m64 -L/usr/lib64/mysql -lmysqlclient
 
 
 clean:	

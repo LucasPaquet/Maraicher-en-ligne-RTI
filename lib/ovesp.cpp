@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <mysql.h>
 
 //***** Etat du protocole : liste des clients loggés ****************
 int clients[NB_MAX_CLIENTS];
@@ -16,11 +17,12 @@ void ajoute(int socket);
 void retire(int socket);
 
 //***** Parsing de la requete et creation de la reponse *************
-bool OVESP(char* requete, char* reponse, int socket)
+bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion)
 {
     int idArticle = 0;
     // ***** Récupération nom de la requete *****************
     char *ptr = strtok(requete, "#");
+    Article art;
 
     // ***** LOGIN ******************************************
     if (strcmp(ptr, "LOGIN") == 0)
@@ -61,7 +63,15 @@ bool OVESP(char* requete, char* reponse, int socket)
 
         printf("\t[THREAD %p] CONSULT de %d\n", pthread_self(), idArticle);
 
-        OVESP_Consult(idArticle);
+        art = OVESP_Consult(idArticle, connexion);
+        // faire si id = -1 faire ko
+        if (strcmp(art.idArticle, "-1") == 0)
+            sprintf(reponse, "CONSULT#ko");
+        else
+            sprintf(reponse, "CONSULT#ok#%s#%s#%s#%s#%s", art.idArticle, art.intitule, art.stock, art.prix, art.image);
+
+
+        return true;
     }
 
     // ***** LOGOUT *****************************************
@@ -113,8 +123,8 @@ bool OVESP(char* requete, char* reponse, int socket)
 bool OVESP_Login(const char* user, const char* password, int newClient)
 {
     if (strcmp(user, "wagner") == 0 && strcmp(password, "abc123") == 0) return true;
-    if (strcmp(user, "charlet") == 0 && strcmp(password, "xyz456") == 0) return true;
-    return true;
+    if (strcmp(user, "a") == 0 && strcmp(password, "a") == 0) return true;
+    return false;
 }
 
 int OVESP_Operation(char op, int a, int b)
@@ -132,9 +142,35 @@ int OVESP_Operation(char op, int a, int b)
     return 0;
 }
 
-Article OVESP_Consult(int idArticle)
+Article OVESP_Consult(int idArticle, MYSQL* connexion)
 {
+    char requete[200];
+    Article response;
+    MYSQL_RES  *resultat;
+    MYSQL_ROW  tuple;
+
+  // Acces BD
+  sprintf(requete,"select * from articles where id = %d",idArticle); // pour recuperer les infos sur le produit en fonciton de son id
+  
+  mysql_query(connexion,requete); // execution de la requete
+  resultat = mysql_store_result(connexion);
+  if (resultat && idArticle > 0 && idArticle < 22)
+  {
+    tuple = mysql_fetch_row(resultat); 
+    printf("(ACCESBD) RESULTAT : %s, %s, %s, %s, %s\n", tuple[0], tuple[1], tuple[2], tuple[3], tuple[4]);
+
+    strcpy(response.idArticle, tuple[0]);
+    strcpy(response.intitule, tuple[1]);
+    strcpy(response.prix, tuple[2]);
+    strcpy(response.stock, tuple[3]);
+    strcpy(response.image, tuple[4]);   
     
+  }
+  else
+  {
+    strcpy(response.idArticle, "-1");
+  }
+  return response;
 }
 
 //***** Gestion de l'état du protocole ******************************
