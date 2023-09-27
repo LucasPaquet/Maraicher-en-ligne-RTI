@@ -26,6 +26,7 @@ $(OBJECT)/mainclient.o:	$(QT)/mainclient.cpp
 
 $(OBJECT)/tcp.o:	$(LIB)/tcp.cpp $(LIB)/tcp.h
 	echo Creation de tcp.o
+	mkdir ./object -p
 	g++ -c $(LIB)/tcp.cpp -o $(OBJECT)/tcp.o
 $(OBJECT)/ovesp.o:	$(LIB)/ovesp.h $(LIB)/ovesp.cpp
 	echo Creation de ovesp.o
