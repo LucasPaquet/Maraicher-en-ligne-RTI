@@ -469,9 +469,7 @@ void OVESP_Achat(int article, int quantite)
 {
     char requete[200], reponse[200];
     int nbEcrits, nbLus, stock, id;
-    char intitule[200];
-    char image[200];
-    char prix[200];
+    char msg[200];
 
 
     // ***** Construction de la requête *********************
@@ -479,7 +477,14 @@ void OVESP_Achat(int article, int quantite)
 
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);
-    w->setTotal(10.1);
+
+    char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+    strcpy(msg, strtok(NULL, "#"));   // recuperer le message
+    if (strcmp(ptr, "ok") == 0)
+        w->dialogueMessage("Achat réussi", msg);
+    else
+        w->dialogueErreur("Achat refusé", msg);
 }
 
 //***** Échange de données entre client et serveur ******************

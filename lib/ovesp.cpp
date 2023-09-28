@@ -82,16 +82,26 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
     // ***** ACHAT ******************************************
     if (strcmp(ptr, "ACHAT") == 0)
     {
-        int idArticle, quantite;
+        int idArticle, quantite, rep;
 
         idArticle = atoi(strtok(NULL, "#"));
         quantite = atoi(strtok(NULL, "#"));
 
         printf("\t[THREAD %p] ACHAT de %d\n", pthread_self(), idArticle);
 
-        OVESP_Achat(idArticle,connexion,quantite,caddie);
+        rep = OVESP_Achat(idArticle,connexion,quantite,caddie);
 
-        sprintf(reponse, "ACHAT#ko");
+        switch(rep)
+        {
+            case 0: sprintf(reponse, "ACHAT#ok#Votre a bien ete enregistrer");
+                    break;
+            case 1: sprintf(reponse, "ACHAT#ko#Votre caddie est plein");
+                    break;
+            case 2: sprintf(reponse, "ACHAT#ko#Il n'y a pas asser de stock");
+                    break;
+            case 3: sprintf(reponse, "ACHAT#ko#Erreur");
+                    break;
+        }
 
         return true;
     }
@@ -195,7 +205,7 @@ Article OVESP_Consult(int idArticle, MYSQL* connexion)
   return response;
 }
 
-bool OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10])
+int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10])
 {
     int caddieFree, i;
     MYSQL_ROW  tuple;
@@ -210,6 +220,9 @@ bool OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle ca
         }
     }
 
+    if (i == 10)
+        return 1;
+
     sprintf(requete,"select * from articles where id = %d",idArticle);
                         
     mysql_query(connexion,requete);
@@ -222,6 +235,7 @@ bool OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle ca
         if (atoi(tuple[3]) - quantite < 0)
         {
           printf("PAS ASSER DE STOCK\n");
+          return 2;
         }
         else
         {
@@ -233,12 +247,17 @@ bool OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle ca
             strcpy(caddie[caddieFree].intitule, tuple[1]);
             caddie[caddieFree].prix = atof(tuple[2]);
             caddie[caddieFree].stock =  quantite;
-            strcpy(caddie[caddieFree].image, tuple[4]);  
+            strcpy(caddie[caddieFree].image, tuple[4]); 
+
+            printCaddie(caddie); // Fct de debug qui permet de print le caddie
+
+            return 0;
         }
     }
 
     printCaddie(caddie);
-    return true;
+    return 3;
+    
 }
 
 //***** Gestion de l'état du protocole ******************************
