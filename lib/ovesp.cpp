@@ -10,14 +10,19 @@
 int clients[NB_MAX_CLIENTS];
 int nbClients = 0;
 pthread_mutex_t mutexClients = PTHREAD_MUTEX_INITIALIZER;
+char requete[200];
 
 // Prototypes de fonctions
 int estPresent(int socket);
 void ajoute(int socket);
 void retire(int socket);
 
+// Fonction de debug
+void printCaddie(CaddieArticle caddie[10]);
+
+
 //***** Parsing de la requete et creation de la reponse *************
-bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion)
+bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArticle caddie[10])
 {
     int idArticle = 0;
     // ***** Récupération nom de la requete *****************
@@ -65,11 +70,28 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion)
 
         art = OVESP_Consult(idArticle, connexion);
         // faire si id = -1 faire ko
-        if (strcmp(art.idArticle, "-1") == 0)
+        if (strcmp(art.idArticle, "-1") == 0) // si on ne trouve pas l'article
             sprintf(reponse, "CONSULT#ko");
         else
             sprintf(reponse, "CONSULT#ok#%s#%s#%s#%s#%s", art.idArticle, art.intitule, art.stock, art.prix, art.image);
 
+
+        return true;
+    }
+
+    // ***** ACHAT ******************************************
+    if (strcmp(ptr, "ACHAT") == 0)
+    {
+        int idArticle, quantite;
+
+        idArticle = atoi(strtok(NULL, "#"));
+        quantite = atoi(strtok(NULL, "#"));
+
+        printf("\t[THREAD %p] ACHAT de %d\n", pthread_self(), idArticle);
+
+        OVESP_Achat(idArticle,connexion,quantite,caddie);
+
+        sprintf(reponse, "ACHAT#ko");
 
         return true;
     }
@@ -144,10 +166,10 @@ int OVESP_Operation(char op, int a, int b)
 
 Article OVESP_Consult(int idArticle, MYSQL* connexion)
 {
-    char requete[200];
     Article response;
     MYSQL_RES  *resultat;
     MYSQL_ROW  tuple;
+
 
   // Acces BD
   sprintf(requete,"select * from articles where id = %d",idArticle); // pour recuperer les infos sur le produit en fonciton de son id
@@ -171,6 +193,52 @@ Article OVESP_Consult(int idArticle, MYSQL* connexion)
     strcpy(response.idArticle, "-1");
   }
   return response;
+}
+
+bool OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10])
+{
+    int caddieFree, i;
+    MYSQL_ROW  tuple;
+    MYSQL_RES  *resultat;
+    char requeteSql[200];
+    char requete[200];
+
+    for (i = 0; i < 10; ++i) {
+        if (caddie[i].idArticle == -1) {
+            caddieFree = i; // Retourne le numéro de la première place libre
+            break;
+        }
+    }
+
+    sprintf(requete,"select * from articles where id = %d",idArticle);
+                        
+    mysql_query(connexion,requete);
+    resultat = mysql_store_result(connexion);
+  
+    if (resultat && idArticle > 0 && idArticle < 22)
+    {
+        tuple = mysql_fetch_row(resultat);
+    
+        if (atoi(tuple[3]) - quantite < 0)
+        {
+          printf("PAS ASSER DE STOCK\n");
+        }
+        else
+        {
+            // si assez de stock
+            sprintf(requeteSql, "update articles SET stock = stock - %d where id = %d",quantite,idArticle); // mise a jour du stock
+            mysql_query(connexion,requeteSql);
+
+            caddie[caddieFree].idArticle = atoi(tuple[0]);
+            strcpy(caddie[caddieFree].intitule, tuple[1]);
+            caddie[caddieFree].prix = atof(tuple[2]);
+            caddie[caddieFree].stock =  quantite;
+            strcpy(caddie[caddieFree].image, tuple[4]);  
+        }
+    }
+
+    printCaddie(caddie);
+    return true;
 }
 
 //***** Gestion de l'état du protocole ******************************
@@ -228,4 +296,17 @@ void OVESP_Close()
     }
 
     pthread_mutex_unlock(&mutexClients);
+}
+
+//*****Fonction pour DEBUG ******************************************
+
+void printCaddie(CaddieArticle caddie[10])
+{
+    for (int i = 0; i < 10; ++i)
+    {
+        if (caddie[i].idArticle != -1)
+            printf("ID : %d \nQT: %d \nPrix: %f\n intitule : %s\n", caddie[i].idArticle, caddie[i].stock, caddie[i].prix, caddie[i].intitule);
+        else
+            printf("VIDE\n");
+    }
 }

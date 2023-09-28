@@ -164,6 +164,11 @@ void TraitementConnexion(int sService)
     char requete[200], reponse[200];
     int nbLus, nbEcrits;
     bool onContinue = true;
+    CaddieArticle articles[10]; // Caddie du Client
+
+    for (int i = 0; i < 10; ++i) 
+        articles[i].idArticle = -1;
+        
 
     while (onContinue)
     {
@@ -189,7 +194,7 @@ void TraitementConnexion(int sService)
         printf("\t[THREAD %p] Requete recue = %s\n", pthread_self(), requete);
 
         // ***** Traitement de la requete ***********
-        onContinue = OVESP(requete, reponse, sService, connexion);
+        onContinue = OVESP(requete, reponse, sService, connexion, articles);
 
         // ***** Envoi de la reponse ****************
         if ((nbEcrits = Send(sService, reponse, strlen(reponse))) < 0)

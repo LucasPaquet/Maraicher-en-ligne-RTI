@@ -20,6 +20,7 @@ void Echange(char* requete, char* reponse);
 bool OVESP_Login(const char* user, const char* password);
 void OVESP_Logout();
 void OVESP_Consult(int article);
+void OVESP_Achat(int article, int quantite);
 
 int sClient;
 int articleEnCour = 0; // changer en Struct Article
@@ -351,7 +352,7 @@ void WindowClient::on_pushButtonPrecedent_clicked()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonAcheter_clicked()
 {
-
+    OVESP_Achat(articleEnCour, getQuantite());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -462,6 +463,23 @@ void OVESP_Consult(int article)
         w->setArticle(intitule, stof(tmp), stock, image); // stof() = convertir un string en float
     }
     
+}
+
+void OVESP_Achat(int article, int quantite)
+{
+    char requete[200], reponse[200];
+    int nbEcrits, nbLus, stock, id;
+    char intitule[200];
+    char image[200];
+    char prix[200];
+
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "ACHAT#%d#%d", article, quantite);
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+    w->setTotal(10.1);
 }
 
 //***** Échange de données entre client et serveur ******************
