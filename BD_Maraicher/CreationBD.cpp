@@ -47,8 +47,13 @@ int main(int argc,char *argv[])
 
   // Creation d'une table UNIX_FINAL
   printf("Creation de la table articles...\n");
-  mysql_query(connexion,"drop table articles;"); // au cas ou elle existerait deja
+
+  // au cas ou elles existeraient deja
+  mysql_query(connexion,"drop table articles;"); 
+  mysql_query(connexion,"drop table clients;");
+
   mysql_query(connexion,"create table articles (id INT(4) auto_increment primary key, intitule varchar(20),prix FLOAT(4),stock INT(4),image varchar(20));");
+  mysql_query(connexion,"create table clients (nom varchar(50),mdp varchar(50));");
 
   // Ajout de tuples dans la table UNIX_FINAL
   printf("Ajout de 21 articles la table articles...\n");
@@ -58,6 +63,14 @@ int main(int argc,char *argv[])
 	  sprintf(requete,"insert into articles values (NULL,'%s',%f,%d,'%s');",Elm[i].intitule,Elm[i].prix,Elm[i].stock,Elm[i].image);
 	  mysql_query(connexion,requete);
   }
+
+  printf("Ajout de quelques clients...\n");
+
+  sprintf(requete,"insert into clients values ('a', 'a');");
+  mysql_query(connexion,requete);
+
+  sprintf(requete,"insert into clients values ('wagner', 'abc123');");
+  mysql_query(connexion,requete);
 
   // Deconnection de la BD
   mysql_close(connexion);

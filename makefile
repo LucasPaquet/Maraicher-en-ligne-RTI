@@ -31,9 +31,12 @@ $(OBJECT)/tcp.o:	$(LIB)/tcp.cpp $(LIB)/tcp.h
 $(OBJECT)/ovesp.o:	$(LIB)/ovesp.h $(LIB)/ovesp.cpp
 	echo Creation de ovesp.o
 	g++ -c $(LIB)/ovesp.cpp -o $(OBJECT)/ovesp.o -I/usr/include/mysql -m64 -L/usr/lib64/mysql -lmysqlclient
-
+CreationBD:	BD_Maraicher/CreationBD.cpp
+	echo Creation de CreationBD
+	g++ -o BD_Maraicher/CreationBD BD_Maraicher/CreationBD.cpp -I/usr/include/mysql -m64 -L/usr/lib64/mysql -lmysqlclient -lpthread -lz -lm -lrt -lssl -lcrypto -ldl
 
 clean:	
 	rm -f Client
 	rm -f Server
 	rm -f $(OBJECT)/*.o
+	rm -f BD_Maraicher/CreationBD
