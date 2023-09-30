@@ -106,6 +106,16 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         return true;
     }
 
+    // ***** CADDIE *****************************************
+    if (strcmp(ptr, "CADDIE") == 0)
+    {
+        printf("\t[THREAD %p] CADDIE\n", pthread_self());
+
+        sprintf(reponse, "CADDIE#%s",OVESP_Caddie(caddie)); 
+
+        return true;
+    }
+
     // ***** LOGOUT *****************************************
     if (strcmp(ptr, "LOGOUT") == 0)
     {
@@ -258,6 +268,35 @@ int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle cad
     printCaddie(caddie);
     return 3;
     
+}
+
+char* OVESP_Caddie(struct CaddieArticle caddie[10]) {
+    char* article = (char*)malloc(2000); // Allouer de la mémoire pour la chaîne résultante
+    char* rep = (char*)malloc(2000); // Allouer de la mémoire pour la chaîne résultante
+    article[0] = '\0'; // Initialiser la chaîne résultante comme une chaîne vide
+    const char separator = '#'; // Caractère séparateur
+    int n = 0; // nb d'article dans la panier
+
+    for (int i = 0; i < 10; ++i) {
+        if (caddie[i].idArticle != -1) {
+            
+            char temp[200]; 
+            sprintf(temp, "%d%c%s%c%d%c%.2f%c%s%c",
+                caddie[i].idArticle, separator,
+                caddie[i].intitule, separator,
+                caddie[i].stock, separator,
+                caddie[i].prix, separator,
+                caddie[i].image, separator
+            );
+            strcat(article, temp);
+
+            n++;
+        }
+    }
+
+    sprintf(rep, "%d#%s", n, article);
+    printf("%s\n", rep);
+    return rep;
 }
 
 //***** Gestion de l'état du protocole ******************************
