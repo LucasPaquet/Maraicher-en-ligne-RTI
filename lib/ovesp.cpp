@@ -271,22 +271,22 @@ int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle cad
 }
 
 char* OVESP_Caddie(struct CaddieArticle caddie[10]) {
-    char* article = (char*)malloc(2000); // Allouer de la mémoire pour la chaîne résultante
-    char* rep = (char*)malloc(2000); // Allouer de la mémoire pour la chaîne résultante
-    article[0] = '\0'; // Initialiser la chaîne résultante comme une chaîne vide
-    const char separator = '#'; // Caractère séparateur
+    char* article = (char*)malloc(2000); // Allouer de la mémoire pour la chaine avec les articles
+    char* rep = (char*)malloc(2000); // Allouer de la mémoire pour la chaine résultante
+    article[0] = '\0'; // Initialiser la chaîne résultante comme une chaine vide
+    const char separator = '#'; // Caractere séparateur
     int n = 0; // nb d'article dans la panier
 
     for (int i = 0; i < 10; ++i) {
         if (caddie[i].idArticle != -1) {
             
             char temp[200]; 
-            sprintf(temp, "%d%c%s%c%d%c%.2f%c%s%c",
+            sprintf(temp, "%c%d%c%s%c%d%c%.2f%c%s", separator,
                 caddie[i].idArticle, separator,
                 caddie[i].intitule, separator,
                 caddie[i].stock, separator,
                 caddie[i].prix, separator,
-                caddie[i].image, separator
+                caddie[i].image
             );
             strcat(article, temp);
 
@@ -294,7 +294,7 @@ char* OVESP_Caddie(struct CaddieArticle caddie[10]) {
         }
     }
 
-    sprintf(rep, "%d#%s", n, article);
+    sprintf(rep, "%d%s", n, article);
     printf("%s\n", rep);
     return rep;
 }
