@@ -25,6 +25,7 @@ void OVESP_Logout();
 void OVESP_Consult(int article);
 void OVESP_Achat(int article, int quantite);
 void OVESP_Caddie();
+void OVESP_Cancel(int indArticle);
 
 int sClient;
 int articleEnCour = 0; // changer en Struct Article
@@ -50,9 +51,6 @@ WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::Wi
 
     ui->pushButtonPayer->setText("Confirmer achat");
     setPublicite("!!! Bienvenue sur le Maraicher en ligne !!!");
-
-    // Exemples à supprimer
-    ajouteArticleTablePanier("cerises",8.96,2);
 
     // Armement des signaux
     struct sigaction A;
@@ -357,13 +355,14 @@ void WindowClient::on_pushButtonPrecedent_clicked()
 void WindowClient::on_pushButtonAcheter_clicked()
 {
     OVESP_Achat(articleEnCour, getQuantite());
-    OVESP_Caddie();
+    OVESP_Caddie(); // On met a jour le caddie
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonSupprimer_clicked()
 {
-
+    OVESP_Cancel(getIndiceArticleSelectionne());
+    OVESP_Caddie(); // On met a jour le caddie
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -495,6 +494,7 @@ void OVESP_Achat(int article, int quantite)
 }
 
 //*******************************************************************
+
 void OVESP_Caddie()
 {
     char requete[200], reponse[2000];
@@ -508,6 +508,8 @@ void OVESP_Caddie()
 
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);
+
+     // ***** Parsing de la réponse **************************
 
     w->videTablePanier(); // on vide tout car on va tout remplir juste après
 
@@ -525,9 +527,29 @@ void OVESP_Caddie()
         w->ajouteArticleTablePanier(intitule, prix, quantite);
     }
 
-    // ***** Parsing de la réponse **************************
-    // Pas vraiment utile...
+   
+   
 }
+
+//*******************************************************************
+
+void OVESP_Cancel(int indArticle)
+{
+    char requete[200], reponse[200];
+    int nbEcrits, nbLus;
+
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "CANCEL#%d", indArticle);
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la requête **************************
+}
+
+
+
 //***** Échange de données entre client et serveur ******************
 void Echange(char* requete, char* reponse)
 {

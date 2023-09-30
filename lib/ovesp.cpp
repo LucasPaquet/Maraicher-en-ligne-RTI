@@ -116,6 +116,23 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         return true;
     }
 
+    // ***** CANCEL *****************************************
+    if (strcmp(ptr, "CANCEL") == 0)
+    {
+        int indArticle = 0;
+
+        printf("\t[THREAD %p] CANCEL\n", pthread_self());
+        
+        indArticle = atoi(strtok(NULL, "#")); // recuperer l'indice du panier
+
+        if (OVESP_Cancel(indArticle,connexion,caddie))
+            sprintf(reponse, "CANCEL#ok"); 
+        else
+            sprintf(reponse, "CANCEL#ko");
+
+        return true;
+    }
+
     // ***** LOGOUT *****************************************
     if (strcmp(ptr, "LOGOUT") == 0)
     {
@@ -294,10 +311,61 @@ char* OVESP_Caddie(struct CaddieArticle caddie[10]) {
         }
     }
 
-    sprintf(rep, "%d%s", n, article);
-    printf("%s\n", rep);
+    if (n > 0) // si il y a plus d'un article dans le panier
+       sprintf(rep, "%d%s", n, article);
+    else
+        sprintf(rep, "0");
+    
+
+    printf("%s\n", rep); // debug
     return rep;
 }
+
+bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
+{
+    char requete[200];
+    int quantite = caddie[indArticle].stock;
+    int idArticle = caddie[indArticle].idArticle;
+    int i;
+
+    sprintf(requete, "update articles SET stock = stock + %d where id = %d",quantite,idArticle); // mise a jour du stock
+    mysql_query(connexion,requete);
+
+    for(i = indArticle; i < 10; i++)
+    {
+        /*
+        if(caddie[i+2].idArticle == -1)
+        {
+            caddie[i].idArticle = caddie[i+1].idArticle;
+            strcpy(caddie[i].intitule,caddie[i+1].intitule);
+            caddie[i].prix = caddie[i+1].prix;
+            caddie[i].stock = caddie[i+1].stock;
+            strcpy(caddie[i].image,caddie[i+1].image);
+
+            caddie[i+1].idArticle = -1;
+        }
+        */
+
+        if (caddie[i+1].idArticle == -1) // si l'article dans le panier suivant n'existe pas
+        {
+            caddie[i].idArticle = -1; // mettre id = -1. Cela permet d'aviter de copié du vide et d'optimiser le code
+            break; // se termine plus car le reste du panier doit etre vide
+        }
+        else
+        { 
+            caddie[i].idArticle = caddie[i+1].idArticle;
+            strcpy(caddie[i].intitule,caddie[i+1].intitule);
+            caddie[i].prix = caddie[i+1].prix;
+            caddie[i].stock = caddie[i+1].stock;
+            strcpy(caddie[i].image,caddie[i+1].image);
+        }
+    }
+
+    printCaddie(caddie);
+
+    return true;
+}
+
 
 //***** Gestion de l'état du protocole ******************************
 int estPresent(int socket)
