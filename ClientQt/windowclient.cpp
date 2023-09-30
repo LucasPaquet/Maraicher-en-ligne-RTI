@@ -548,6 +548,12 @@ void OVESP_Cancel(int indArticle)
     Echange(requete, reponse);
 
     // ***** Parsing de la requête **************************
+
+    char* ptr = strtok(reponse, "#"); // entête = CANCEL (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+    
+    if (strcmp(ptr, "ko") == 0)
+        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de l'article");
 }
 
 //*******************************************************************
@@ -563,7 +569,13 @@ void OVESP_CancelAll()
     Echange(requete, reponse);
 
     // ***** Parsing de la réponse **************************
-    // Pas vraiment utile...
+    char* ptr = strtok(reponse, "#"); // entête = CANCELALL (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+
+    if (strcmp(ptr, "ok") == 0)
+        w->dialogueMessage("Panier vidé", "Votre panier a bien été vidé");
+    else
+        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");
 }
 
 
