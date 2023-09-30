@@ -23,6 +23,7 @@ bool OVESP(char* requete, char* reponse,int socket, MYSQL* connexion, CaddieArti
 bool OVESP_Login(const char* user,const char* password, int newClient);
 Article OVESP_Consult(int idArticle, MYSQL* connexion);
 int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10]);
+char* OVESP_Caddie(CaddieArticle caddie[10]);
 int OVESP_Operation(char op,int a,int b);
 void OVESP_Close();
 

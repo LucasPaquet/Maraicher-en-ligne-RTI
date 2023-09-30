@@ -16,11 +16,15 @@ extern WindowClient *w;
 #define REPERTOIRE_IMAGES "ClientQt/images/"
 
 void HandlerSIGINT(int s);
+
 void Echange(char* requete, char* reponse);
+
+// Protocol OVESP
 bool OVESP_Login(const char* user, const char* password);
 void OVESP_Logout();
 void OVESP_Consult(int article);
 void OVESP_Achat(int article, int quantite);
+void OVESP_Caddie();
 
 int sClient;
 int articleEnCour = 0; // changer en Struct Article
@@ -353,6 +357,7 @@ void WindowClient::on_pushButtonPrecedent_clicked()
 void WindowClient::on_pushButtonAcheter_clicked()
 {
     OVESP_Achat(articleEnCour, getQuantite());
+    OVESP_Caddie();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -465,6 +470,8 @@ void OVESP_Consult(int article)
     
 }
 
+//*******************************************************************
+
 void OVESP_Achat(int article, int quantite)
 {
     char requete[200], reponse[200];
@@ -487,6 +494,40 @@ void OVESP_Achat(int article, int quantite)
         w->dialogueErreur("Achat refusé", msg);
 }
 
+//*******************************************************************
+void OVESP_Caddie()
+{
+    char requete[200], reponse[2000];
+    int nbEcrits, nbLus, n;
+    char intitule[100], image[100];
+    int quantite, idArticle;
+    float prix;
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "CADDIE");
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    w->videTablePanier(); // on vide tout car on va tout remplir juste après
+
+    char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
+    n = atoi(strtok(NULL, "#"));  
+
+    for (int i = 0; i < n; ++i)
+    {
+        idArticle = atoi(strtok(NULL, "#"));
+        strcpy(intitule, strtok(NULL, "#"));
+        quantite = atoi(strtok(NULL, "#")); 
+        prix = atof(strtok(NULL, "#")); 
+        strcpy(image, strtok(NULL, "#"));
+
+        w->ajouteArticleTablePanier(intitule, prix, quantite);
+    }
+
+    // ***** Parsing de la réponse **************************
+    // Pas vraiment utile...
+}
 //***** Échange de données entre client et serveur ******************
 void Echange(char* requete, char* reponse)
 {
