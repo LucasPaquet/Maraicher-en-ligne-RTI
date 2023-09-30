@@ -26,6 +26,7 @@ void OVESP_Consult(int article);
 void OVESP_Achat(int article, int quantite);
 void OVESP_Caddie();
 void OVESP_Cancel(int indArticle);
+void OVESP_CancelAll();
 
 int sClient;
 int articleEnCour = 0; // changer en Struct Article
@@ -355,20 +356,21 @@ void WindowClient::on_pushButtonPrecedent_clicked()
 void WindowClient::on_pushButtonAcheter_clicked()
 {
     OVESP_Achat(articleEnCour, getQuantite());
-    OVESP_Caddie(); // On met a jour le caddie
+    OVESP_Caddie(); // On met a jour le caddie pour le GUI
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonSupprimer_clicked()
 {
     OVESP_Cancel(getIndiceArticleSelectionne());
-    OVESP_Caddie(); // On met a jour le caddie
+    OVESP_Caddie(); // On met a jour le caddie pour le GUI
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonViderPanier_clicked()
 {
-
+    OVESP_CancelAll();
+    OVESP_Caddie(); // On met a jour le caddie pour le GUI
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,6 +548,22 @@ void OVESP_Cancel(int indArticle)
     Echange(requete, reponse);
 
     // ***** Parsing de la requête **************************
+}
+
+//*******************************************************************
+void OVESP_CancelAll()
+{
+    char requete[200], reponse[200];
+    int nbEcrits, nbLus;
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "CANCELALL");
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la réponse **************************
+    // Pas vraiment utile...
 }
 
 

@@ -79,7 +79,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         return true;
     }
 
-    // ***** ACHAT ******************************************
+    // ***** ACHAT *******************************************
     if (strcmp(ptr, "ACHAT") == 0)
     {
         int idArticle, quantite, rep;
@@ -129,6 +129,21 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             sprintf(reponse, "CANCEL#ok"); 
         else
             sprintf(reponse, "CANCEL#ko");
+
+        return true;
+    }
+
+    // ***** CANCELALL *****************************************
+    if (strcmp(ptr, "CANCELALL") == 0)
+    {
+        int indArticle = 0;
+
+        printf("\t[THREAD %p] CANCELALL\n", pthread_self());
+
+        if (OVESP_CancelAll(connexion,caddie))
+            sprintf(reponse, "CANCELALL#ok"); 
+        else
+            sprintf(reponse, "CANCELALL#ko");
 
         return true;
     }
@@ -329,29 +344,18 @@ bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
     int i;
 
     sprintf(requete, "update articles SET stock = stock + %d where id = %d",quantite,idArticle); // mise a jour du stock
-    mysql_query(connexion,requete);
+    
+    if (mysql_query(connexion,requete) != 0) // Si la requete ne s'est pas bien passer
+        return false;
 
-    for(i = indArticle; i < 10; i++)
+    for(i = indArticle; i < 10; i++) // pour decaller tout les articles pour la coherence entre le panier du serveur et celui du client
     {
-        /*
-        if(caddie[i+2].idArticle == -1)
-        {
-            caddie[i].idArticle = caddie[i+1].idArticle;
-            strcpy(caddie[i].intitule,caddie[i+1].intitule);
-            caddie[i].prix = caddie[i+1].prix;
-            caddie[i].stock = caddie[i+1].stock;
-            strcpy(caddie[i].image,caddie[i+1].image);
-
-            caddie[i+1].idArticle = -1;
-        }
-        */
-
         if (caddie[i+1].idArticle == -1) // si l'article dans le panier suivant n'existe pas
         {
             caddie[i].idArticle = -1; // mettre id = -1. Cela permet d'aviter de copié du vide et d'optimiser le code
             break; // se termine plus car le reste du panier doit etre vide
         }
-        else
+        else // sinon copie tout les elements de l'article
         { 
             caddie[i].idArticle = caddie[i+1].idArticle;
             strcpy(caddie[i].intitule,caddie[i+1].intitule);
@@ -361,13 +365,24 @@ bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
         }
     }
 
-    printCaddie(caddie);
+    printCaddie(caddie); // debug
 
+    return true;
+}
+
+bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10])
+{
+    while(caddie[0].idArticle != -1) // on garde le 0 car tout va se decaller vers le 0 quand on les surprimme 1 a 1
+    {
+        if (OVESP_Cancel(0,connexion,caddie) == false) // Nonzero if an error occurred
+            return false;
+    }
     return true;
 }
 
 
 //***** Gestion de l'état du protocole ******************************
+
 int estPresent(int socket)
 {
     int indice = -1;
