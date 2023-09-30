@@ -498,7 +498,10 @@ void OVESP_Achat(int article, int quantite)
 void OVESP_Caddie()
 {
     char requete[200], reponse[2000];
-    int nbEcrits, nbLus;
+    int nbEcrits, nbLus, n;
+    char intitule[100], image[100];
+    int quantite, idArticle;
+    float prix;
 
     // ***** Construction de la requête *********************
     sprintf(requete, "CADDIE");
@@ -506,7 +509,21 @@ void OVESP_Caddie()
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);
 
-    w->dialogueMessage("DEBUG", reponse);
+    w->videTablePanier(); // on vide tout car on va tout remplir juste après
+
+    char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
+    n = atoi(strtok(NULL, "#"));  
+
+    for (int i = 0; i < n; ++i)
+    {
+        idArticle = atoi(strtok(NULL, "#"));
+        strcpy(intitule, strtok(NULL, "#"));
+        quantite = atoi(strtok(NULL, "#")); 
+        prix = atof(strtok(NULL, "#")); 
+        strcpy(image, strtok(NULL, "#"));
+
+        w->ajouteArticleTablePanier(intitule, prix, quantite);
+    }
 
     // ***** Parsing de la réponse **************************
     // Pas vraiment utile...
