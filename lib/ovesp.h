@@ -20,7 +20,7 @@ struct CaddieArticle {
 };
 
 bool OVESP(char* requete, char* reponse,int socket, MYSQL* connexion, CaddieArticle caddie[10]);
-bool OVESP_Login(const char* user,const char* password, int newClient, MYSQL* connexion);
+int OVESP_Login(const char* user,const char* password, int newClient, MYSQL* connexion);
 Article OVESP_Consult(int idArticle, MYSQL* connexion);
 int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10]);
 char* OVESP_Caddie(CaddieArticle caddie[10]);

@@ -319,21 +319,13 @@ void WindowClient::closeEvent(QCloseEvent *event)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonLogin_clicked()
 {
-  // Phase de login
-  /*
-  char user[50], password[50];
-  user[strlen(user) - 1] = 0;
-  password[strlen(password) - 1] = 0;
-  */
-
-  if (!OVESP_Login(getNom(), getMotDePasse(), isNouveauClientChecked()))
-      dialogueErreur("Erreur de connection", "Les identifiants sont incorrects !");
-  else
-  {
-    dialogueMessage("Connexion réussi", "Bienvenue");
-    loginOK();
-    OVESP_Consult(articleEnCour); // pour avoir le premier article quand on se connecte
-  }
+    if (!OVESP_Login(getNom(), getMotDePasse(), isNouveauClientChecked()))
+        printf("Erreur de connexion\n");
+    else
+    {
+        loginOK();
+        OVESP_Consult(articleEnCour); // pour avoir le premier article quand on se connecte
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +393,7 @@ void HandlerSIGINT(int s)
 bool OVESP_Login(const char* user, const char* password, int newClient)
 {
     char requete[200], reponse[200];
-    bool onContinue = true;
+    char* message;
 
     // ***** Construction de la requête *********************
     sprintf(requete, "LOGIN#%s#%s#%d", user, password, newClient);
@@ -410,26 +402,31 @@ bool OVESP_Login(const char* user, const char* password, int newClient)
     Echange(requete, reponse);
 
     // ***** Parsing de la réponse **************************
+    printf("DEBUG : %s\n", reponse);
+
     char* ptr = strtok(reponse, "#"); // entête = LOGIN (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
+    message = strtok(NULL, "#");      // Message de retour
 
     if (strcmp(ptr, "ok") == 0)
-        printf("Login OK.\n");
+    {
+        w->dialogueMessage("Connexion réussi !", message);
+        return true;
+    }
     else
     {
-        ptr = strtok(NULL, "#"); // raison du ko
+        w->dialogueErreur("Erreur de connexion", message);
         printf("Erreur de login: %s\n", ptr);
-        onContinue = false;
+        return false;
     }
 
-    return onContinue;
 }
 
 //*******************************************************************
 void OVESP_Logout()
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus;
+
 
     // ***** Construction de la requête *********************
     sprintf(requete, "LOGOUT");
@@ -447,7 +444,7 @@ void OVESP_Logout()
 void OVESP_Consult(int article)
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus, stock, id;
+    int stock, id;
     char intitule[200];
     char image[200];
     char prix[200];
@@ -484,7 +481,6 @@ void OVESP_Consult(int article)
 void OVESP_Achat(int article, int quantite)
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus, stock, id;
     char msg[200];
 
 
@@ -508,7 +504,7 @@ void OVESP_Achat(int article, int quantite)
 void OVESP_Caddie()
 {
     char requete[200], reponse[2000];
-    int nbEcrits, nbLus, n;
+    int n;
     char intitule[100], image[100];
     int quantite, idArticle;
     float prix;
@@ -550,7 +546,6 @@ void OVESP_Caddie()
 void OVESP_Cancel(int indArticle)
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus;
 
 
     // ***** Construction de la requête *********************
@@ -572,7 +567,7 @@ void OVESP_Cancel(int indArticle)
 void OVESP_CancelAll()
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus;
+
 
     // ***** Construction de la requête *********************
     sprintf(requete, "CANCELALL");
@@ -593,7 +588,6 @@ void OVESP_CancelAll()
 void OVESP_Confirmer()
 {
     char requete[200], reponse[200];
-    int nbEcrits, nbLus;
 
     // ***** Construction de la requête *********************
     sprintf(requete, "CONFIRMER");

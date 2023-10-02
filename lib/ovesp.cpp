@@ -33,7 +33,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
     if (strcmp(ptr, "LOGIN") == 0)
     {
         char user[50], password[50];
-        int newClient = 0;
+        int rep, newClient = 0;
 
         strcpy(user, strtok(NULL, "#"));
         strcpy(password, strtok(NULL, "#"));
@@ -48,17 +48,26 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         }
         else
         {
-            if (OVESP_Login(user, password, newClient, connexion))
+            rep = OVESP_Login(user, password, newClient, connexion);
+            switch(rep)
             {
-                sprintf(reponse, "LOGIN#ok");
-                ajoute(socket);
-                return true;
+                case 0: sprintf(reponse, "LOGIN#ok#Vous êtes bien enregistrez et connecté");
+                        break;
+                case 1: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté");
+                        break;
+                case -1: sprintf(reponse, "LOGIN#ko#Problème dans la requête SQL");
+                        break;
+                case -2: sprintf(reponse, "LOGIN#ko#L'utilisateur existe déjà");
+                        break;
+                case -3: sprintf(reponse, "LOGIN#ko#Problème dans la requête SQL");
+                        break;
+                case -4: sprintf(reponse, "LOGIN#ko#Mauvais mot de passe");
+                        break;
+                case -5: sprintf(reponse, "LOGIN#ko#Le nom d'utilisateur n'existe pas dans la base de données");
+                        break;
             }
-            else
-            {
-                sprintf(reponse, "LOGIN#ko#Mauvais identifiants !");
-                return true;
-            }
+            return true;
+            
         }
     }
 
@@ -195,7 +204,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
 
 //***** Traitement des requetes *************************************
-bool OVESP_Login(const char* user, const char* password, int newClient, MYSQL* connexion)
+int OVESP_Login(const char* user, const char* password, int newClient, MYSQL* connexion)
 {
     MYSQL_RES  *resultat;
     MYSQL_ROW  tuple;
@@ -216,13 +225,19 @@ bool OVESP_Login(const char* user, const char* password, int newClient, MYSQL* c
 
                 if (strcmp(password, tuple[1]) == 0)
                 {
-                    return true;
+                    return 1; // connecter
                 }
-            }     
+                else
+                {
+                    return -4;
+                }
+            }
+            else
+                return -5;     
         }
         else // si probleme lors de la requete
         {
-            return false;
+            return -1; // erreur dans la requete
         }
     }  
     else
@@ -236,24 +251,22 @@ bool OVESP_Login(const char* user, const char* password, int newClient, MYSQL* c
         {
             if ( mysql_num_rows(resultat) == 1) // si il a trouve un ligne donc l'utilisateur existe deja
             {
-                return false;
+                return -2;
             }
             else
             {
                 sprintf(requete,"INSERT INTO clients (nom, mdp) VALUES ('%s', '%s');", user, password);                
                 mysql_query(connexion,requete);
 
-                return true;
+                return 0; // enregistrer et connecte
             }     
         }
         else // si probleme lors de la requete
         {
-            return false;
+            return -3;
         }
     }  
 
-
-    return false;
 }
 
 int OVESP_Operation(char op, int a, int b)
