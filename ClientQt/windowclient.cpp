@@ -29,7 +29,9 @@ void OVESP_Cancel(int indArticle);
 void OVESP_CancelAll();
 
 int sClient;
-int articleEnCour = 0; // changer en Struct Article
+int articleEnCour = 1; // changer en Struct Article
+
+float prixTotal = 0; 
 
 WindowClient::WindowClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::WindowClient)
 {
@@ -305,8 +307,10 @@ void WindowClient::dialogueErreur(const char* titre,const char* message)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::closeEvent(QCloseEvent *event)
 {
+    OVESP_Logout();
+    OVESP_CancelAll();
 
-  exit(0);
+    exit(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,6 +331,7 @@ void WindowClient::on_pushButtonLogin_clicked()
   {
     dialogueMessage("Connexion réussi", "Bienvenue");
     loginOK();
+    OVESP_Consult(articleEnCour); // pour avoir le premier article quand on se connecte
   }
 }
 
@@ -334,6 +339,8 @@ void WindowClient::on_pushButtonLogin_clicked()
 void WindowClient::on_pushButtonLogout_clicked()
 {
   OVESP_Logout();
+  OVESP_CancelAll();
+  articleEnCour = 1;
   logoutOK();
   setMotDePasse("");
   setNom("");
@@ -518,6 +525,8 @@ void OVESP_Caddie()
     char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
     n = atoi(strtok(NULL, "#"));  
 
+    prixTotal = 0; // on le remet a zero parce que on va tout recalculer
+
     for (int i = 0; i < n; ++i)
     {
         idArticle = atoi(strtok(NULL, "#"));
@@ -526,10 +535,12 @@ void OVESP_Caddie()
         prix = atof(strtok(NULL, "#")); 
         strcpy(image, strtok(NULL, "#"));
 
+        prixTotal += prix * quantite;
+
         w->ajouteArticleTablePanier(intitule, prix, quantite);
     }
 
-   
+    w->setTotal(prixTotal);
    
 }
 
@@ -551,7 +562,7 @@ void OVESP_Cancel(int indArticle)
 
     char* ptr = strtok(reponse, "#"); // entête = CANCEL (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
-    
+
     if (strcmp(ptr, "ko") == 0)
         w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de l'article");
 }
@@ -572,9 +583,7 @@ void OVESP_CancelAll()
     char* ptr = strtok(reponse, "#"); // entête = CANCELALL (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
 
-    if (strcmp(ptr, "ok") == 0)
-        w->dialogueMessage("Panier vidé", "Votre panier a bien été vidé");
-    else
+    if (strcmp(ptr, "ko") == 0)
         w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");
 }
 
