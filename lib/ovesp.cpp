@@ -37,6 +37,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         strcpy(user, strtok(NULL, "#"));
         strcpy(password, strtok(NULL, "#"));
+        newClient = atoi(strtok(NULL, "#"));
 
         printf("\t[THREAD %p] LOGIN de %s\n", pthread_self(), user);
 
@@ -47,7 +48,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         }
         else
         {
-            if (OVESP_Login(user, password, newClient))
+            if (OVESP_Login(user, password, newClient, connexion))
             {
                 sprintf(reponse, "LOGIN#ok");
                 ajoute(socket);
@@ -194,10 +195,64 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
 
 //***** Traitement des requetes *************************************
-bool OVESP_Login(const char* user, const char* password, int newClient)
+bool OVESP_Login(const char* user, const char* password, int newClient, MYSQL* connexion)
 {
-    if (strcmp(user, "wagner") == 0 && strcmp(password, "abc123") == 0) return true;
-    if (strcmp(user, "a") == 0 && strcmp(password, "a") == 0) return true;
+    MYSQL_RES  *resultat;
+    MYSQL_ROW  tuple;
+
+    if (newClient == 0) // 0 = pas coche
+    {
+        sprintf(requete,"select * from clients where nom LIKE '%s'", user);
+                            
+        mysql_query(connexion,requete);
+        resultat = mysql_store_result(connexion);
+
+        if (resultat) 
+        {
+            if ( mysql_num_rows(resultat) == 1) // si il a trouvé un ligne
+            {
+                tuple = mysql_fetch_row(resultat); 
+                printf("(ACCESBD) RESULTAT : %s, %s\n", tuple[0], tuple[1]);
+
+                if (strcmp(password, tuple[1]) == 0)
+                {
+                    return true;
+                }
+            }     
+        }
+        else // si probleme lors de la requete
+        {
+            return false;
+        }
+    }  
+    else
+    {
+        sprintf(requete,"select * from clients where nom LIKE '%s'", user);
+                            
+        mysql_query(connexion,requete);
+        resultat = mysql_store_result(connexion);
+
+        if (resultat) 
+        {
+            if ( mysql_num_rows(resultat) == 1) // si il a trouve un ligne donc l'utilisateur existe deja
+            {
+                return false;
+            }
+            else
+            {
+                sprintf(requete,"INSERT INTO clients (nom, mdp) VALUES ('%s', '%s');", user, password);                
+                mysql_query(connexion,requete);
+
+                return true;
+            }     
+        }
+        else // si probleme lors de la requete
+        {
+            return false;
+        }
+    }  
+
+
     return false;
 }
 
@@ -380,6 +435,10 @@ bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10])
     return true;
 }
 
+bool OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10])
+{
+    return true;
+}
 
 //***** Gestion de l'état du protocole ******************************
 

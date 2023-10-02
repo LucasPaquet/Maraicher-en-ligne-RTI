@@ -19,14 +19,15 @@ void HandlerSIGINT(int s);
 
 void Echange(char* requete, char* reponse);
 
-// Protocol OVESP
-bool OVESP_Login(const char* user, const char* password);
+// Function Protocol OVESP
+bool OVESP_Login(const char* user, const char* password, int newClient);
 void OVESP_Logout();
 void OVESP_Consult(int article);
 void OVESP_Achat(int article, int quantite);
 void OVESP_Caddie();
 void OVESP_Cancel(int indArticle);
 void OVESP_CancelAll();
+void OVESP_Confirmer();
 
 int sClient;
 int articleEnCour = 1; // changer en Struct Article
@@ -325,7 +326,7 @@ void WindowClient::on_pushButtonLogin_clicked()
   password[strlen(password) - 1] = 0;
   */
 
-  if (!OVESP_Login(getNom(), getMotDePasse()))
+  if (!OVESP_Login(getNom(), getMotDePasse(), isNouveauClientChecked()))
       dialogueErreur("Erreur de connection", "Les identifiants sont incorrects !");
   else
   {
@@ -397,13 +398,13 @@ void HandlerSIGINT(int s)
 }
 
 // ***** Gestion du protocole OVESP ***********************************
-bool OVESP_Login(const char* user, const char* password)
+bool OVESP_Login(const char* user, const char* password, int newClient)
 {
     char requete[200], reponse[200];
     bool onContinue = true;
 
     // ***** Construction de la requête *********************
-    sprintf(requete, "LOGIN#%s#%s", user, password);
+    sprintf(requete, "LOGIN#%s#%s#%d", user, password, newClient);
 
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);
@@ -587,6 +588,29 @@ void OVESP_CancelAll()
         w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");
 }
 
+//*******************************************************************
+
+void OVESP_Confirmer()
+{
+    char requete[200], reponse[200];
+    int nbEcrits, nbLus;
+
+    // ***** Construction de la requête *********************
+    sprintf(requete, "CONFIRMER");
+
+    // ***** Envoi requête + réception réponse **************
+    Echange(requete, reponse);
+
+    // ***** Parsing de la réponse **************************
+    char* ptr = strtok(reponse, "#"); // entête = CONFIRMER (normalement...)
+    ptr = strtok(NULL, "#");          // statut = ok ou ko
+
+    if (strcmp(ptr, "ok") == 0)
+        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");        
+    else
+        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");
+
+}
 
 
 //***** Échange de données entre client et serveur ******************
