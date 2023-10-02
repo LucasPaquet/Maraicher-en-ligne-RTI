@@ -402,7 +402,6 @@ bool OVESP_Login(const char* user, const char* password, int newClient)
     Echange(requete, reponse);
 
     // ***** Parsing de la réponse **************************
-    printf("DEBUG : %s\n", reponse);
 
     char* ptr = strtok(reponse, "#"); // entête = LOGIN (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
@@ -467,11 +466,13 @@ void OVESP_Consult(int article)
         strcpy(image, strtok(NULL, "#"));
 
         // pour convertir le "."" en "," pour le prix
-        string tmp(prix);
-        size_t x = tmp.find(",");
-        if (x != string::npos) tmp.replace(x,1,".");
+        for (char* p = prix; *p; ++p) {
+        if (*p == '.') {
+            *p = ','; // Remplacez la virgule par un point
+        }
+    }
 
-        w->setArticle(intitule, stof(tmp), stock, image); // stof() = convertir un string en float
+        w->setArticle(intitule, atof(prix), stock, image); // stof() = convertir un string en float
     }
     
 }
@@ -505,9 +506,8 @@ void OVESP_Caddie()
 {
     char requete[200], reponse[2000];
     int n;
-    char intitule[100], image[100];
+    char intitule[100], image[100], prix[10];
     int quantite, idArticle;
-    float prix;
 
     // ***** Construction de la requête *********************
     sprintf(requete, "CADDIE");
@@ -529,12 +529,19 @@ void OVESP_Caddie()
         idArticle = atoi(strtok(NULL, "#"));
         strcpy(intitule, strtok(NULL, "#"));
         quantite = atoi(strtok(NULL, "#")); 
-        prix = atof(strtok(NULL, "#")); 
+        strcpy(prix, strtok(NULL, "#"));
         strcpy(image, strtok(NULL, "#"));
 
-        prixTotal += prix * quantite;
+        // pour convertir le "."" en "," pour le prix
+        for (char* p = prix; *p; ++p) {
+        if (*p == '.') {
+            *p = ','; // Remplacez la virgule par un point
+        }
+    }
 
-        w->ajouteArticleTablePanier(intitule, prix, quantite);
+        prixTotal += atof(prix) * quantite;
+
+        w->ajouteArticleTablePanier(intitule, atof(prix), quantite);
     }
 
     w->setTotal(prixTotal);
