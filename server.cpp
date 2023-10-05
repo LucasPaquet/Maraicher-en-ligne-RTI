@@ -12,12 +12,14 @@
 void HandlerSIGINT(int s);
 void TraitementConnexion(int sService);
 void* FctThreadClient(void* p);
+void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente);
 int sEcoute;
 
 // Gestion du pool de threads
-#define NB_THREADS_POOL 2
-#define TAILLE_FILE_ATTENTE 20
-int socketsAcceptees[TAILLE_FILE_ATTENTE];
+int NB_THREADS_POOL = 0;
+int TAILLE_FILE_ATTENTE = 0;
+int* socketsAcceptees = NULL; // on alloue dynamiquement la memoire apres car sinon on a pas le temps de lire le fichier de configuration
+
 int indiceEcriture = 0, indiceLecture = 0;
 pthread_mutex_t mutexSocketsAcceptees;
 pthread_cond_t condSocketsAcceptees;
@@ -27,6 +29,14 @@ MYSQL* connexion;
 
 int main(int argc, char* argv[])
 {
+    lireConfig("config.txt", &NB_THREADS_POOL, &TAILLE_FILE_ATTENTE); // permet de lire le fichier de configuration "config.txt"
+
+    socketsAcceptees = (int*)malloc(TAILLE_FILE_ATTENTE * sizeof(int)); 
+    if (socketsAcceptees == NULL) { // on verifie que la memoire a bien ete allouer
+        perror("Erreur d'allocation memoire");
+    }
+    
+
     if (argc != 2)
     {
         printf("Erreur...\n");
@@ -209,4 +219,29 @@ void TraitementConnexion(int sService)
         if (!onContinue)
             printf("[THREAD %p] Fin de connexion de la socket%d\n", pthread_self(), sService);
     }
+}
+
+void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente) {
+    FILE* fichier = fopen(fichierConfig, "r");
+
+    if (!fichier) {
+        perror("Erreur : Impossible d'ouvrir le fichier de configuration");
+        return;
+    }
+
+    char ligne[100];
+    while (fgets(ligne, sizeof(ligne), fichier)) {
+        char* cle = strtok(ligne, "=");
+        char* valeur = strtok(NULL, "\n");
+
+        if (cle && valeur) { // verifie  qu'on a pas lu du vide (donc cle ou valeur = NULL)
+            if (strcmp(cle, "NB_THREADS_POOL") == 0) {
+                *nbThreadsPool = atoi(valeur);
+            } else if (strcmp(cle, "TAILLE_FILE_ATTENTE") == 0) {
+                *tailleFileAttente = atoi(valeur);
+            }
+        }
+    }
+
+    fclose(fichier);
 }
