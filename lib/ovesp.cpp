@@ -255,7 +255,7 @@ int OVESP_Login(const char* user, const char* password, int newClient, MYSQL* co
             }
             else
             {
-                sprintf(requete,"INSERT INTO clients (nom, mdp) VALUES ('%s', '%s');", user, password);                
+                sprintf(requete,"INSERT INTO clients (id, nom, mdp) VALUES (NULL, '%s', '%s');", user, password);                
                 mysql_query(connexion,requete);
 
                 return 0; // enregistrer et connecte

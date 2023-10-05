@@ -53,7 +53,7 @@ int main(int argc,char *argv[])
   mysql_query(connexion,"drop table clients;");
 
   mysql_query(connexion,"create table articles (id INT(4) auto_increment primary key, intitule varchar(20),prix FLOAT(4),stock INT(4),image varchar(20));");
-  mysql_query(connexion,"create table clients (nom varchar(50),mdp varchar(50));");
+  mysql_query(connexion,"create table clients (id INT(4) auto_increment primary key,nom varchar(50),mdp varchar(50));");
 
   // Ajout de tuples dans la table UNIX_FINAL
   printf("Ajout de 21 articles la table articles...\n");
@@ -66,10 +66,10 @@ int main(int argc,char *argv[])
 
   printf("Ajout de quelques clients...\n");
 
-  sprintf(requete,"insert into clients values ('a', 'a');");
+  sprintf(requete,"insert into clients values (NULL, 'a', 'a');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
   mysql_query(connexion,requete);
 
-  sprintf(requete,"insert into clients values ('wagner', 'abc123');");
+  sprintf(requete,"insert into clients values (NULL, 'wagner', 'abc123');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
   mysql_query(connexion,requete);
 
   // Deconnection de la BD
