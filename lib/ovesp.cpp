@@ -103,13 +103,13 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         switch(rep)
         {
-            case 0: sprintf(reponse, "ACHAT#ok#Votre a bien ete enregistrer");
+            case 0: sprintf(reponse, "ACHAT#ok#%d#%d", quantite, idArticle);
                     break;
-            case 1: sprintf(reponse, "ACHAT#ko#Votre caddie est plein");
+            case 1: sprintf(reponse, "ACHAT#ko#-2");
                     break;
-            case 2: sprintf(reponse, "ACHAT#ko#Il n'y a pas asser de stock");
+            case 2: sprintf(reponse, "ACHAT#ko#0");
                     break;
-            case 3: sprintf(reponse, "ACHAT#ko#Erreur");
+            case 3: sprintf(reponse, "ACHAT#ko#-1");
                     break;
         }
 

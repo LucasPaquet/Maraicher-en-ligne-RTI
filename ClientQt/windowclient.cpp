@@ -355,8 +355,14 @@ void WindowClient::on_pushButtonPrecedent_clicked()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonAcheter_clicked()
 {
-    OVESP_Achat(articleEnCour, getQuantite());
-    OVESP_Caddie(); // On met a jour le caddie pour le GUI
+    if (getQuantite() > 0) // on verifie que le client n'achete pas 0 article
+    {
+        OVESP_Achat(articleEnCour, getQuantite());
+        OVESP_Caddie(); // On met a jour le caddie pour le GUI
+    }
+    else
+        w->dialogueErreur("Erreur d'achat", "Mettez une valeur au dessus de 0");
+    
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,7 +488,7 @@ void OVESP_Consult(int article)
 void OVESP_Achat(int article, int quantite)
 {
     char requete[200], reponse[200];
-    char msg[200];
+    int idArticle, qtt;
 
 
     // ***** Construction de la requête *********************
@@ -493,11 +499,26 @@ void OVESP_Achat(int article, int quantite)
 
     char* ptr = strtok(reponse, "#"); // entête = CONSULT (normalement...)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
-    strcpy(msg, strtok(NULL, "#"));   // recuperer le message
+
+    qtt = atoi(strtok(NULL, "#")); // recuperer la quantite de l'article
+    
     if (strcmp(ptr, "ok") == 0)
-        w->dialogueMessage("Achat réussi", msg);
+    {
+        idArticle = atoi(strtok(NULL, "#")); // recuperer l'id de l'article
+        w->dialogueMessage("Achat réussi", "L'article a été ajouté à votre panier");
+    }
     else
-        w->dialogueErreur("Achat refusé", msg);
+    {
+        switch(qtt)
+        {
+            case 0: w->dialogueErreur("Erreur d'achat", "Stock insufisant");
+                    break;
+            case -1: w->dialogueErreur("Erreur d'achat", "Article non trouvé");
+                    break;
+            case -2: w->dialogueErreur("Erreur d'achat", "Votre panier est plein !");
+                    break;
+        }
+    }
 }
 
 //*******************************************************************
