@@ -382,7 +382,7 @@ void WindowClient::on_pushButtonViderPanier_clicked()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonPayer_clicked()
 {
-
+    OVESP_Confirmer();
 }
 
 
@@ -615,7 +615,8 @@ void OVESP_CancelAll()
 
 void OVESP_Confirmer()
 {
-    char requete[200], reponse[200];
+    char requete[200], reponse[200], msg[200];
+    int numFacture;
 
     // ***** Construction de la requête *********************
     sprintf(requete, "CONFIRMER");
@@ -628,9 +629,15 @@ void OVESP_Confirmer()
     ptr = strtok(NULL, "#");          // statut = ok ou ko
 
     if (strcmp(ptr, "ok") == 0)
-        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");        
+    {
+        numFacture = atoi(strtok(NULL, "#")); // recuperer le num de facture
+        sprintf(msg, "La commande à bien été envoyé au Maraîcher. Numéro de facture : %d", numFacture);
+        w->dialogueMessage("Commande réussi", msg);
+        w->videTablePanier();        
+        w->setTotal(0);
+    }
     else
-        w->dialogueErreur("Erreur de supression", "Une erreur est survenue lors de la supression de votre panier");
+        w->dialogueErreur("Commande échoué", "Une erreur est survenue lors du passage de la commande");
 
 }
 

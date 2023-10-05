@@ -26,7 +26,7 @@ int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle cad
 char* OVESP_Caddie(CaddieArticle caddie[10]);
 bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10]);
 bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10]);
-bool OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10]);
+int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10]);
 int OVESP_Operation(char op,int a,int b);
 void OVESP_Close();
 

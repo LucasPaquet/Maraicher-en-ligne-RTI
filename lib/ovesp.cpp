@@ -158,6 +158,26 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         return true;
     }
 
+    // ***** CONFIRMER *****************************************
+    if (strcmp(ptr, "CONFIRMER") == 0)
+    {
+        int numFacture;
+        printf("\t[THREAD %p] CONFIRMER\n", pthread_self());
+
+        numFacture = OVESP_Confirmer(connexion,caddie);
+
+        if (numFacture > 0)
+        {
+            sprintf(reponse, "CONFIRMER#ok#%d", numFacture);
+        }
+        else
+            sprintf(reponse, "CONFIRMER#ko");
+
+        
+
+        return true;
+    }
+
     // ***** LOGOUT *****************************************
     if (strcmp(ptr, "LOGOUT") == 0)
     {
@@ -448,9 +468,37 @@ bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10])
     return true;
 }
 
-bool OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10])
+int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10])
 {
-    return true;
+    float total;
+    int numFacture = 0, nbArticle = 0, idClient=10;
+    MYSQL_RES  *resultat;
+    MYSQL_ROW  tuple;
+
+    for (int i = 0; i < 10; ++i)
+    {
+        if (caddie[i].idArticle != -1)
+        {
+            total += caddie[i].prix * caddie[i].stock;
+            nbArticle += caddie[i].stock;
+            caddie[i].idArticle = -1;
+        }
+         
+    } 
+
+    sprintf(requete,"insert into factures values (NULL, %d, %f, %d, false);", idClient, total, nbArticle); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+    mysql_query(connexion,requete);
+
+    sprintf(requete,"select max(id) from factures;"); // on recupere le "dernier" numero de facture
+    mysql_query(connexion,requete);
+    resultat = mysql_store_result(connexion);
+    if (resultat) 
+    {
+        tuple = mysql_fetch_row(resultat);
+        numFacture = atoi(tuple[0]);
+    }
+   
+    return numFacture;
 }
 
 //***** Gestion de l'état du protocole ******************************
