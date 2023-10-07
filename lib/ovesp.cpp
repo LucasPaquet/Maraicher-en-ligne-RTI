@@ -22,7 +22,7 @@ void printCaddie(CaddieArticle caddie[10]);
 
 
 //***** Parsing de la requete et creation de la reponse *************
-bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArticle caddie[10])
+bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArticle caddie[10], int* idClient)
 {
     int idArticle = 0;
     // ***** Récupération nom de la requete *****************
@@ -51,10 +51,6 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             rep = OVESP_Login(user, password, newClient, connexion);
             switch(rep)
             {
-                case 0: sprintf(reponse, "LOGIN#ok#Vous êtes bien enregistrez et connecté");
-                        break;
-                case 1: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté");
-                        break;
                 case -1: sprintf(reponse, "LOGIN#ko#Problème dans la requête SQL");
                         break;
                 case -2: sprintf(reponse, "LOGIN#ko#L'utilisateur existe déjà");
@@ -64,6 +60,10 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
                 case -4: sprintf(reponse, "LOGIN#ko#Mauvais mot de passe");
                         break;
                 case -5: sprintf(reponse, "LOGIN#ko#Le nom d'utilisateur n'existe pas dans la base de données");
+                        break;
+                default: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté");
+                         *idClient = rep;
+                         printf("DEBUG DEDE: %d\n", rep);
                         break;
             }
             return true;
@@ -164,7 +164,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         int numFacture;
         printf("\t[THREAD %p] CONFIRMER\n", pthread_self());
 
-        numFacture = OVESP_Confirmer(connexion,caddie);
+        numFacture = OVESP_Confirmer(connexion,caddie, idClient);
 
         if (numFacture > 0)
         {
@@ -243,9 +243,9 @@ int OVESP_Login(const char* user, const char* password, int newClient, MYSQL* co
                 tuple = mysql_fetch_row(resultat); 
                 printf("(ACCESBD) RESULTAT : %s, %s\n", tuple[0], tuple[1]);
 
-                if (strcmp(password, tuple[1]) == 0)
+                if (strcmp(password, tuple[2]) == 0)
                 {
-                    return 1; // connecter
+                    return atoi(tuple[0]); // connecter et on retourne l'id du client pour les factures
                 }
                 else
                 {
@@ -278,14 +278,22 @@ int OVESP_Login(const char* user, const char* password, int newClient, MYSQL* co
                 sprintf(requete,"INSERT INTO clients (id, nom, mdp) VALUES (NULL, '%s', '%s');", user, password);                
                 mysql_query(connexion,requete);
 
-                return 0; // enregistrer et connecte
+                sprintf(requete,"select max(id) from clients;"); // on recupere le "dernier" id de clients
+                mysql_query(connexion,requete);
+                resultat = mysql_store_result(connexion);
+                if (resultat) 
+                {
+                    tuple = mysql_fetch_row(resultat);
+                    return atoi(tuple[0]);
+                }
             }     
         }
         else // si probleme lors de la requete
         {
             return -3;
         }
-    }  
+    }
+    return -3;  
 
 }
 
@@ -468,10 +476,10 @@ bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10])
     return true;
 }
 
-int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10])
+int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int* idClient)
 {
     float total;
-    int numFacture = 0, nbArticle = 0, idClient=10;
+    int numFacture = 0, nbArticle = 0;
     MYSQL_RES  *resultat;
     MYSQL_ROW  tuple;
 
@@ -486,7 +494,7 @@ int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10])
          
     } 
 
-    sprintf(requete,"insert into factures values (NULL, %d, %f, %d, false);", idClient, total, nbArticle); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+    sprintf(requete,"insert into factures values (NULL, %d, %f, %d, CURRENT_TIMESTAMP, false);", *idClient, total, nbArticle); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente // CURRENT_TIMESTAMP est gerer par mySQL
     mysql_query(connexion,requete);
 
     sprintf(requete,"select max(id) from factures;"); // on recupere le "dernier" numero de facture
