@@ -449,7 +449,7 @@ void OVESP_Logout()
 void OVESP_Consult(int article)
 {
     char requete[200], reponse[200];
-    int stock, id;
+    int stock;
     char intitule[200];
     char image[200];
     char prix[200];
@@ -488,7 +488,7 @@ void OVESP_Consult(int article)
 void OVESP_Achat(int article, int quantite)
 {
     char requete[200], reponse[200];
-    int idArticle, qtt;
+    int qtt;
 
 
     // ***** Construction de la requête *********************
@@ -504,7 +504,7 @@ void OVESP_Achat(int article, int quantite)
     
     if (strcmp(ptr, "ok") == 0)
     {
-        idArticle = atoi(strtok(NULL, "#")); // recuperer l'id de l'article
+        // idArticle = atoi(strtok(NULL, "#")); // recuperer l'id de l'article
         w->dialogueMessage("Achat réussi", "L'article a été ajouté à votre panier");
     }
     else
