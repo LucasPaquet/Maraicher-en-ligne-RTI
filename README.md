@@ -40,6 +40,11 @@ la librairie de sockets développée)
 * le client C/C++/Qt capable de communiquer avec ce serveur
 *  la mise en place de la base de données MySQL
 
+## Élement associé
+:file_folder:: BD_Maraicher, ClientQT, lib
+<br>
+:page_facing_up: : config.txt, makefile, server.cpp
+
 ## L’application « Client Achat »
 
 C’est grâce à l’application « Client Achat » (tournant sur une machine Linux) qu’un nouveau
