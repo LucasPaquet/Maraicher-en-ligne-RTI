@@ -1,6 +1,10 @@
 package GUI;
 
+import com.formdev.flatlaf.FlatLightLaf;
+
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 public class WindowClient extends JFrame {
     private JTextField tfNom;
@@ -27,10 +31,14 @@ public class WindowClient extends JFrame {
     private JPanel JPanelMain;
 
     public WindowClient() {
+
         setTitle("Le Maraicher en ligne");
+        setIconImage(new ImageIcon(this.getClass().getResource("/Images/icon.png")).getImage()); // pour ajouter une icone a l'app
         setContentPane(JPanelMain);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // pour implementer les fonctions de fenetre de bas (exit, agrandir, ...)
         pack();
+
+
 
     }
 }
