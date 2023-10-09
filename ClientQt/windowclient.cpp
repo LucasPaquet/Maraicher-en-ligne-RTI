@@ -319,12 +319,17 @@ void WindowClient::closeEvent(QCloseEvent *event)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonLogin_clicked()
 {
-    if (!OVESP_Login(getNom(), getMotDePasse(), isNouveauClientChecked()))
-        printf("Erreur de connexion\n");
+    if (strcmp(getNom(), "") == 0 || strcmp(getMotDePasse(), "") == 0)
+    {
+        dialogueErreur("Erreur de connexion", "Remplisez les champs !");
+    }
     else
     {
-        loginOK();
-        OVESP_Consult(articleEnCour); // pour avoir le premier article quand on se connecte
+        if (OVESP_Login(getNom(), getMotDePasse(), isNouveauClientChecked()))
+        {
+            loginOK();
+            OVESP_Consult(articleEnCour); // pour avoir le premier article quand on se connecte
+        }
     }
 }
 

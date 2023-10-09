@@ -12,12 +12,13 @@
 void HandlerSIGINT(int s);
 void TraitementConnexion(int sService);
 void* FctThreadClient(void* p);
-void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente);
+void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente, int* portAchat);
 int sEcoute;
 
 // Gestion du pool de threads
 int NB_THREADS_POOL = 0;
 int TAILLE_FILE_ATTENTE = 0;
+int PORT_ACHAT = 0;
 int* socketsAcceptees = NULL; // on alloue dynamiquement la memoire apres car sinon on a pas le temps de lire le fichier de configuration
 
 int indiceEcriture = 0, indiceLecture = 0;
@@ -29,19 +30,11 @@ MYSQL* connexion;
 
 int main(int argc, char* argv[])
 {
-    lireConfig("config.txt", &NB_THREADS_POOL, &TAILLE_FILE_ATTENTE); // permet de lire le fichier de configuration "config.txt"
+    lireConfig("config.txt", &NB_THREADS_POOL, &TAILLE_FILE_ATTENTE, &PORT_ACHAT); // permet de lire le fichier de configuration "config.txt"
 
     socketsAcceptees = (int*)malloc(TAILLE_FILE_ATTENTE * sizeof(int)); 
     if (socketsAcceptees == NULL) { // on verifie que la memoire a bien ete allouer
         perror("Erreur d'allocation memoire");
-    }
-    
-
-    if (argc != 2)
-    {
-        printf("Erreur...\n");
-        printf("USAGE : Serveur portServeur\n");
-        exit(1);
     }
 
     // Initialisation socketsAcceptees
@@ -64,7 +57,7 @@ int main(int argc, char* argv[])
     }
 
     // Creation de la socket d'écoute
-    if ((sEcoute = ServerSocket(atoi(argv[1]))) == -1)
+    if ((sEcoute = ServerSocket(PORT_ACHAT)) == -1)
     {
         perror("Erreur de ServeurSocket");
         exit(1);
@@ -222,7 +215,7 @@ void TraitementConnexion(int sService)
     }
 }
 
-void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente) {
+void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAttente, int* portAchat) {
     FILE* fichier = fopen(fichierConfig, "r");
 
     if (!fichier) {
@@ -240,6 +233,9 @@ void lireConfig(const char* fichierConfig, int* nbThreadsPool, int* tailleFileAt
                 *nbThreadsPool = atoi(valeur);
             } else if (strcmp(cle, "TAILLE_FILE_ATTENTE") == 0) {
                 *tailleFileAttente = atoi(valeur);
+            
+            } else if (strcmp(cle, "PORT_ACHAT") == 0) {
+                *portAchat = atoi(valeur);
             }
         }
     }

@@ -446,7 +446,9 @@ bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
 
     for(i = indArticle; i < 10; i++) // pour decaller tout les articles pour la coherence entre le panier du serveur et celui du client
     {
-        if (caddie[i+1].idArticle == -1) // si l'article dans le panier suivant n'existe pas
+        printf("NUM %d : \n\n\n", i);
+        printCaddie(caddie); // debug
+        if (i == 9 || caddie[i+1].idArticle == -1) // si l'article dans le panier suivant n'existe pas
         {
             caddie[i].idArticle = -1; // mettre id = -1. Cela permet d'aviter de copié du vide et d'optimiser le code
             break; // se termine plus car le reste du panier doit etre vide
@@ -461,7 +463,7 @@ bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
         }
     }
 
-    printCaddie(caddie); // debug
+    
 
     return true;
 }
