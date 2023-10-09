@@ -10,6 +10,7 @@
 int clients[NB_MAX_CLIENTS];
 int nbClients = 0;
 pthread_mutex_t mutexClients = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexBD = PTHREAD_MUTEX_INITIALIZER;
 char requete[200];
 
 // Prototypes de fonctions
@@ -48,7 +49,9 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         }
         else
         {
+            pthread_mutex_lock(&mutexBD);
             rep = OVESP_Login(user, password, newClient, connexion);
+            pthread_mutex_unlock(&mutexBD);
             switch(rep)
             {
                 case -1: sprintf(reponse, "LOGIN#ko#Problème dans la requête SQL");
@@ -78,7 +81,10 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         printf("\t[THREAD %p] CONSULT de %d\n", pthread_self(), idArticle);
 
+        pthread_mutex_lock(&mutexBD);
         art = OVESP_Consult(idArticle, connexion);
+        pthread_mutex_unlock(&mutexBD);
+
         // faire si id = -1 faire ko
         if (strcmp(art.idArticle, "-1") == 0) // si on ne trouve pas l'article
             sprintf(reponse, "CONSULT#ko");
@@ -99,7 +105,10 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         printf("\t[THREAD %p] ACHAT de %d\n", pthread_self(), idArticle);
 
+
+        pthread_mutex_lock(&mutexBD);
         rep = OVESP_Achat(idArticle,connexion,quantite,caddie);
+        pthread_mutex_unlock(&mutexBD);
 
         switch(rep)
         {
@@ -121,7 +130,9 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
     {
         printf("\t[THREAD %p] CADDIE\n", pthread_self());
 
+        pthread_mutex_lock(&mutexBD);
         sprintf(reponse, "CADDIE#%s",OVESP_Caddie(caddie)); 
+        pthread_mutex_unlock(&mutexBD);
 
         return true;
     }
@@ -135,10 +146,12 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         
         indArticle = atoi(strtok(NULL, "#")); // recuperer l'indice du panier
 
+        pthread_mutex_lock(&mutexBD);
         if (OVESP_Cancel(indArticle,connexion,caddie))
             sprintf(reponse, "CANCEL#ok"); 
         else
             sprintf(reponse, "CANCEL#ko");
+        pthread_mutex_unlock(&mutexBD);
 
         return true;
     }
@@ -150,10 +163,12 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         printf("\t[THREAD %p] CANCELALL\n", pthread_self());
 
+        pthread_mutex_lock(&mutexBD);
         if (OVESP_CancelAll(connexion,caddie))
             sprintf(reponse, "CANCELALL#ok"); 
         else
             sprintf(reponse, "CANCELALL#ko");
+        pthread_mutex_unlock(&mutexBD);
 
         return true;
     }
@@ -164,7 +179,9 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         int numFacture;
         printf("\t[THREAD %p] CONFIRMER\n", pthread_self());
 
+        pthread_mutex_lock(&mutexBD);
         numFacture = OVESP_Confirmer(connexion,caddie, idClient);
+        pthread_mutex_unlock(&mutexBD);
 
         if (numFacture > 0)
         {
@@ -446,8 +463,6 @@ bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10])
 
     for(i = indArticle; i < 10; i++) // pour decaller tout les articles pour la coherence entre le panier du serveur et celui du client
     {
-        printf("NUM %d : \n\n\n", i);
-        printCaddie(caddie); // debug
         if (i == 9 || caddie[i+1].idArticle == -1) // si l'article dans le panier suivant n'existe pas
         {
             caddie[i].idArticle = -1; // mettre id = -1. Cela permet d'aviter de copié du vide et d'optimiser le code
