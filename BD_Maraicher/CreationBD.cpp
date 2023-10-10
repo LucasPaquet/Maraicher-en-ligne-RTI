@@ -55,7 +55,7 @@ int main(int argc,char *argv[])
 
   mysql_query(connexion,"create table articles (id INT(4) auto_increment primary key, intitule varchar(20),prix FLOAT(4),stock INT(4),image varchar(20));");
   mysql_query(connexion,"create table clients (id INT(4) auto_increment primary key,nom varchar(50),mdp varchar(50));");
-  mysql_query(connexion,"create table factures (id INT(4) auto_increment primary key, idClient INT(4), prix FLOAT(4), stock INT(4),date DATETIME, paye BOOLEAN);");
+  mysql_query(connexion,"create table factures (id INT(4) auto_increment primary key, idClient INT(4), prix FLOAT(4), date DATETIME, paye BOOLEAN);");
 
   // Ajout de tuples dans la table UNIX_FINAL
   printf("Ajout de 21 articles la table articles...\n");
@@ -77,7 +77,7 @@ int main(int argc,char *argv[])
 
   printf("Ajout de quelques factures\n");
 
-  sprintf(requete,"insert into factures values (NULL, 1, 57.23, 17,CURRENT_TIMESTAMP, false);"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+  sprintf(requete,"insert into factures values (NULL, 1, 57.23, CURRENT_TIMESTAMP, false);"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
   mysql_query(connexion,requete);
 
   // Deconnection de la BD

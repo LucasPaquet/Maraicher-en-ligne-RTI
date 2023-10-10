@@ -20,14 +20,14 @@ struct CaddieArticle {
     int idClient;
 };
 
-bool OVESP(char* requete, char* reponse,int socket, MYSQL* connexion, CaddieArticle caddie[10], int* idClient);
+void OVESP(char* requete, char* reponse,int socket, MYSQL* connexion, CaddieArticle caddie[10]);
 int OVESP_Login(const char* user,const char* password, int newClient, MYSQL* connexion);
 Article OVESP_Consult(int idArticle, MYSQL* connexion);
 int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle caddie[10]);
 char* OVESP_Caddie(CaddieArticle caddie[10]);
 bool OVESP_Cancel(int indArticle, MYSQL* connexion, CaddieArticle caddie[10]);
 bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10]);
-int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int* idClient);
+int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int idClient);
 int OVESP_Operation(char op,int a,int b);
 void OVESP_Close();
 

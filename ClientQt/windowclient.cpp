@@ -31,6 +31,7 @@ void OVESP_Confirmer();
 
 int sClient;
 int articleEnCour = 1; // changer en Struct Article
+int idClient = 0;
 
 float prixTotal = 0; 
 
@@ -364,6 +365,7 @@ void WindowClient::on_pushButtonAcheter_clicked()
     {
         OVESP_Achat(articleEnCour, getQuantite());
         OVESP_Caddie(); // On met a jour le caddie pour le GUI
+        OVESP_Consult(articleEnCour); // pour mettre a jour le stock sur le GUI
     }
     else
         w->dialogueErreur("Erreur d'achat", "Mettez une valeur au dessus de 0");
@@ -373,8 +375,16 @@ void WindowClient::on_pushButtonAcheter_clicked()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WindowClient::on_pushButtonSupprimer_clicked()
 {
-    OVESP_Cancel(getIndiceArticleSelectionne());
-    OVESP_Caddie(); // On met a jour le caddie pour le GUI
+    if (getIndiceArticleSelectionne() == -1)
+    {
+        dialogueErreur("Erreur de supression", "Veillez à sélectionner un article");
+    }
+    else
+    {
+        OVESP_Cancel(getIndiceArticleSelectionne());
+        OVESP_Caddie(); // On met a jour le caddie pour le GUI
+        OVESP_Consult(articleEnCour); // pour mettre a jour le stock sur le GUI
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +392,7 @@ void WindowClient::on_pushButtonViderPanier_clicked()
 {
     OVESP_CancelAll();
     OVESP_Caddie(); // On met a jour le caddie pour le GUI
+    OVESP_Consult(articleEnCour); // pour mettre a jour le stock sur le GUI
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,6 +431,7 @@ bool OVESP_Login(const char* user, const char* password, int newClient)
 
     if (strcmp(ptr, "ok") == 0)
     {
+        idClient = atoi(strtok(NULL, "#"));
         w->dialogueMessage("Connexion réussi !", message);
         return true;
     }
@@ -492,8 +504,8 @@ void OVESP_Consult(int article)
 
 void OVESP_Achat(int article, int quantite)
 {
-    char requete[200], reponse[200];
-    int qtt;
+    char requete[200], reponse[200], msg[200];
+    int qtt, idArticle;
 
 
     // ***** Construction de la requête *********************
@@ -506,11 +518,12 @@ void OVESP_Achat(int article, int quantite)
     ptr = strtok(NULL, "#");          // statut = ok ou ko
 
     qtt = atoi(strtok(NULL, "#")); // recuperer la quantite de l'article
+    idArticle = atoi(strtok(NULL, "#")); // recuperer l'id de l'article
     
     if (strcmp(ptr, "ok") == 0)
     {
-        // idArticle = atoi(strtok(NULL, "#")); // recuperer l'id de l'article
-        w->dialogueMessage("Achat réussi", "L'article a été ajouté à votre panier");
+        sprintf(msg, "%d articles[%d] ont été ajoutés à votre panier", quantite, idArticle);
+        w->dialogueMessage("Achat réussi", msg);
     }
     else
     {
@@ -624,7 +637,7 @@ void OVESP_Confirmer()
     int numFacture;
 
     // ***** Construction de la requête *********************
-    sprintf(requete, "CONFIRMER");
+    sprintf(requete, "CONFIRMER#%d", idClient);
 
     // ***** Envoi requête + réception réponse **************
     Echange(requete, reponse);

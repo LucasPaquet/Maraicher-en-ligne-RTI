@@ -23,7 +23,7 @@ void printCaddie(CaddieArticle caddie[10]);
 
 
 //***** Parsing de la requete et creation de la reponse *************
-bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArticle caddie[10], int* idClient)
+void OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArticle caddie[10])
 {
     int idArticle = 0;
     // ***** Récupération nom de la requete *****************
@@ -45,7 +45,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         if (estPresent(socket) >= 0) // client déjà loggé
         {
             sprintf(reponse, "LOGIN#ko#Client déjà loggé !");
-            return true;
+            return;
         }
         else
         {
@@ -64,12 +64,11 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
                         break;
                 case -5: sprintf(reponse, "LOGIN#ko#Le nom d'utilisateur n'existe pas dans la base de données");
                         break;
-                default: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté");
-                         *idClient = rep;
+                default: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté#%d", rep);
                          printf("DEBUG DEDE: %d\n", rep);
                         break;
             }
-            return true;
+            return;
             
         }
     }
@@ -92,7 +91,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             sprintf(reponse, "CONSULT#ok#%s#%s#%s#%s#%s", art.idArticle, art.intitule, art.stock, art.prix, art.image);
 
 
-        return true;
+        return;
     }
 
     // ***** ACHAT *******************************************
@@ -114,15 +113,15 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         {
             case 0: sprintf(reponse, "ACHAT#ok#%d#%d", quantite, idArticle);
                     break;
-            case 1: sprintf(reponse, "ACHAT#ko#-2");
+            case 1: sprintf(reponse, "ACHAT#ko#-2#%d", idArticle);
                     break;
-            case 2: sprintf(reponse, "ACHAT#ko#0");
+            case 2: sprintf(reponse, "ACHAT#ko#0#%d", idArticle);
                     break;
-            case 3: sprintf(reponse, "ACHAT#ko#-1");
+            case 3: sprintf(reponse, "ACHAT#ko#-1#-1");
                     break;
         }
 
-        return true;
+        return;
     }
 
     // ***** CADDIE *****************************************
@@ -134,7 +133,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         sprintf(reponse, "CADDIE#%s",OVESP_Caddie(caddie)); 
         pthread_mutex_unlock(&mutexBD);
 
-        return true;
+        return;
     }
 
     // ***** CANCEL *****************************************
@@ -153,7 +152,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             sprintf(reponse, "CANCEL#ko");
         pthread_mutex_unlock(&mutexBD);
 
-        return true;
+        return;
     }
 
     // ***** CANCELALL *****************************************
@@ -170,14 +169,17 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             sprintf(reponse, "CANCELALL#ko");
         pthread_mutex_unlock(&mutexBD);
 
-        return true;
+        return;
     }
 
     // ***** CONFIRMER *****************************************
     if (strcmp(ptr, "CONFIRMER") == 0)
     {
         int numFacture;
+        int idClient;
         printf("\t[THREAD %p] CONFIRMER\n", pthread_self());
+
+        idClient = atoi(strtok(NULL, "#"));
 
         pthread_mutex_lock(&mutexBD);
         numFacture = OVESP_Confirmer(connexion,caddie, idClient);
@@ -192,7 +194,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
 
         
 
-        return true;
+        return;
     }
 
     // ***** LOGOUT *****************************************
@@ -201,7 +203,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         printf("\t[THREAD %p] LOGOUT\n", pthread_self());
         retire(socket);
         sprintf(reponse, "LOGOUT#ok");
-        return true;
+        return;
     }
 
     // ***** OPER *******************************************
@@ -218,7 +220,7 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         if (estPresent(socket) == -1)
         {
             sprintf(reponse, "OPER#ko#Client non loggé !");
-            return true;
+            return;
         }
         else
         {
@@ -226,17 +228,15 @@ bool OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
             {
                 int resultat = OVESP_Operation(op, a, b);
                 sprintf(reponse, "OPER#ok#%d", resultat);
-                return true;
+                return;
             }
             catch (int)
             {
                 sprintf(reponse, "OPER#ko#Division par zéro !");
-                return true;
+                return;
             }
         }
     }
-    
-    return false; // Ajustez le retour en fonction de la logique de votre application
 }
 
 
@@ -493,10 +493,10 @@ bool OVESP_CancelAll(MYSQL* connexion, CaddieArticle caddie[10])
     return true;
 }
 
-int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int* idClient)
+int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int idClient)
 {
     float total;
-    int numFacture = 0, nbArticle = 0;
+    int numFacture = 0;
     MYSQL_RES  *resultat;
     MYSQL_ROW  tuple;
 
@@ -505,13 +505,12 @@ int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int* idClient)
         if (caddie[i].idArticle != -1)
         {
             total += caddie[i].prix * caddie[i].stock;
-            nbArticle += caddie[i].stock;
             caddie[i].idArticle = -1;
         }
          
     } 
 
-    sprintf(requete,"insert into factures values (NULL, %d, %f, %d, CURRENT_TIMESTAMP, false);", *idClient, total, nbArticle); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente // CURRENT_TIMESTAMP est gerer par mySQL
+    sprintf(requete,"insert into factures values (NULL, %d, %f, CURRENT_TIMESTAMP, false);", idClient, total); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente // CURRENT_TIMESTAMP est gerer par mySQL
     mysql_query(connexion,requete);
 
     sprintf(requete,"select max(id) from factures;"); // on recupere le "dernier" numero de facture

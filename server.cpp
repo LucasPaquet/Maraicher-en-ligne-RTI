@@ -168,13 +168,12 @@ void TraitementConnexion(int sService)
     int nbLus, nbEcrits;
     bool onContinue = true;
     CaddieArticle articles[10]; // Caddie du Client
-    int* idClient; // pour la factures
 
     for (int i = 0; i < 10; ++i) 
         articles[i].idArticle = -1;
         
 
-    while (onContinue)
+    for(;;) // boucle infinie (jusqu'a l'arret du serveur ou SIGINT)
     {
         printf("\t[THREAD %p] Attente requete...\n", pthread_self());
 
@@ -198,7 +197,7 @@ void TraitementConnexion(int sService)
         printf("\t[THREAD %p] Requete recue = %s\n", pthread_self(), requete);
 
         // ***** Traitement de la requete ***********
-        onContinue = OVESP(requete, reponse, sService, connexion, articles, idClient);
+        OVESP(requete, reponse, sService, connexion, articles);
 
         // ***** Envoi de la reponse ****************
         if ((nbEcrits = Send(sService, reponse, strlen(reponse))) < 0)
@@ -209,9 +208,6 @@ void TraitementConnexion(int sService)
         }
 
         printf("[THREAD %p] Reponse envoyee = %s\n", pthread_self(), reponse);
-
-        if (!onContinue)
-            printf("[THREAD %p] Fin de connexion de la socket%d\n", pthread_self(), sService);
     }
 }
 
