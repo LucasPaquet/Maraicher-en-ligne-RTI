@@ -5,9 +5,9 @@ import java.net.Socket;
 
 public class TcpConnection {
 
-    private Socket socket;
-    private DataOutputStream outputStream;
-    private DataInputStream inputStream;
+    private final Socket socket;
+    private final DataOutputStream outputStream;
+    private final DataInputStream inputStream;
     public TcpConnection(String host, int port) {
         try {
             socket = new Socket(host, port); // connexion au serveur

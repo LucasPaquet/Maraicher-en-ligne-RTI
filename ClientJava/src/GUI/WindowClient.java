@@ -4,10 +4,9 @@ import Tcp.TcpConnection;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Objects;
 
 public class WindowClient extends JFrame {
     private JTextField tfNom;
@@ -15,7 +14,6 @@ public class WindowClient extends JFrame {
     private JButton btnLogin;
     private JButton btnLogout;
     private JCheckBox cbNewClient;
-    private JPanel JPanePublicite;
     private JTextField tfTotal;
     private JButton btnDelete;
     private JButton btnConfirm;
@@ -29,11 +27,12 @@ public class WindowClient extends JFrame {
     private JTextField tfPrice;
     private JTextField tfStock;
     private JTextField tfQuantite;
-    private JPanel JPanePanier;
-    private JPanel JPaneMagasin;
     private JPanel JPanelMain;
-    private TcpConnection serverConnection;
+    private JPanel JPanePanier;
+    private JPanel JPanePublicite;
+    private JPanel JPaneMagasin;
 
+    private final TcpConnection serverConnection;
     private int articleEnCours;
     private int idClient;
 
@@ -49,7 +48,7 @@ public class WindowClient extends JFrame {
 
 
         setTitle("Le Maraicher en ligne");
-        setIconImage(new ImageIcon(this.getClass().getResource("/Images/icon.png")).getImage()); // pour ajouter une icone a l'app
+        setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/Images/icon.png"))).getImage()); // pour ajouter une icone a l'app
         setContentPane(JPanelMain);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // pour implementer les fonctions de fenetre de bas (exit, agrandir, ...)
         pack();
@@ -67,78 +66,50 @@ public class WindowClient extends JFrame {
             }
         });
         //********* Clique sur bouton *****************
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (OVESP_Login())
-                    OVESP_Consult(articleEnCours);
-            }
+        btnLogin.addActionListener(actionEvent -> {
+            if (OVESP_Login())
+                OVESP_Consult(articleEnCours);
         });
 
-        btnLogout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                OVESP_CancelAll();
-                OVESP_Logout();
-            }
+        btnLogout.addActionListener(actionEvent -> {
+            OVESP_CancelAll();
+            OVESP_Logout();
         });
-        btnPrevious.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                OVESP_Consult(articleEnCours - 1);
-            }
-        });
+        btnPrevious.addActionListener(actionEvent -> OVESP_Consult(articleEnCours - 1));
 
-        btnNext.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                OVESP_Consult(articleEnCours + 1);
+        btnNext.addActionListener(actionEvent -> OVESP_Consult(articleEnCours + 1));
+        btnBuy.addActionListener(actionEvent -> {
+            if (tfQuantite.getText().isEmpty()){
+                JOptionPane.showMessageDialog(null, "Entrez une quantité", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
             }
-        });
-        btnBuy.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (tfQuantite.getText().isEmpty()){
-                    JOptionPane.showMessageDialog(null, "Entrez une quantité", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
-                }
-                else {
-                    if (OVESP_Achat()){
-                        OVESP_Caddie();
-                        OVESP_Consult(articleEnCours);
-                    }
-                }
-            }
-        });
-        btnDelete.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (tablePanier.getSelectedRow() == -1)
-                    JOptionPane.showMessageDialog(null, "Veuillez sélectionner un article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
-                else{
-                    OVESP_Cancel();
+            else {
+                if (OVESP_Achat()){
                     OVESP_Caddie();
                     OVESP_Consult(articleEnCours);
                 }
             }
         });
-        btnVider.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-                if (OVESP_CancelAll())
-                    JOptionPane.showMessageDialog(null, "Votre panier à bien été vidé", "Panier vidé", JOptionPane.INFORMATION_MESSAGE);
-                else
-                    JOptionPane.showMessageDialog(null, "Erreur durant la suppresion de l'article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+        btnDelete.addActionListener(actionEvent -> {
+            if (tablePanier.getSelectedRow() == -1)
+                JOptionPane.showMessageDialog(null, "Veuillez sélectionner un article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+            else{
+                OVESP_Cancel();
                 OVESP_Caddie();
                 OVESP_Consult(articleEnCours);
             }
         });
-        btnConfirm.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                OVESP_Confirmer();
-                viderCaddie();
-            }
+        btnVider.addActionListener(actionEvent -> {
+
+            if (OVESP_CancelAll())
+                JOptionPane.showMessageDialog(null, "Votre panier à bien été vidé", "Panier vidé", JOptionPane.INFORMATION_MESSAGE);
+            else
+                JOptionPane.showMessageDialog(null, "Erreur durant la suppresion de l'article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+            OVESP_Caddie();
+            OVESP_Consult(articleEnCours);
+        });
+        btnConfirm.addActionListener(actionEvent -> {
+            OVESP_Confirmer();
+            viderCaddie();
         });
     }
 
@@ -272,7 +243,7 @@ public class WindowClient extends JFrame {
         serverConnection.send("LOGOUT");
 
         // Reception de la reponse
-        String response = serverConnection.receive();
+        serverConnection.receive();
 
         LogoutOk();
     }
@@ -320,13 +291,10 @@ public class WindowClient extends JFrame {
             return true;
         }
         else{
-            switch (Integer.parseInt(champs[2])){
-                case 0: JOptionPane.showMessageDialog(null, "Stock insufisant","Erreur d'achat", JOptionPane.ERROR_MESSAGE);
-                    break;
-                case -1: JOptionPane.showMessageDialog(null, "Article non trouvé","Erreur d'achat", JOptionPane.ERROR_MESSAGE);
-                    break;
-                case -2: JOptionPane.showMessageDialog(null, "Votre panier est plein !","Erreur d'achat", JOptionPane.ERROR_MESSAGE);
-                    break;
+            switch (Integer.parseInt(champs[2])) {
+                case 0 -> JOptionPane.showMessageDialog(null, "Stock insufisant", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+                case -1 -> JOptionPane.showMessageDialog(null, "Article non trouvé", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+                case -2 -> JOptionPane.showMessageDialog(null, "Votre panier est plein !", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
             }
 
             return false;
@@ -400,10 +368,8 @@ public class WindowClient extends JFrame {
         // Reception et parsing de la reponse
         response = serverConnection.receive();
         String[] champs = response.split("#");
-        if (champs[1].equals("ko"))
-            return false;
-        else
-            return true;
+
+        return !champs[1].equals("ko");
 
 
     }
