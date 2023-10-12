@@ -41,15 +41,6 @@ public class WindowClient extends JFrame {
 
         articleEnCours = 1;
 
-        DefaultTableModel model = new DefaultTableModel();
-
-        // Définir les noms des colonnes
-        model.setColumnIdentifiers(new String[]{"Article", "Prix à l'unité", "Quantité"});
-        model.addRow(new Object[]{"Orange", "1,12", "12"});
-
-        // Appliquer le modèle de tableau à la JTable
-        tablePanier.setModel(model);
-
         // changer les proprietes de la JTable
         tablePanier.setDefaultEditor(Object.class, null);
         tablePanier.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -69,6 +60,7 @@ public class WindowClient extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                OVESP_CancelAll();
                 OVESP_Logout();
                 serverConnection.close();
                 dispose(); // Fermez la fenêtre
@@ -86,6 +78,7 @@ public class WindowClient extends JFrame {
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                OVESP_CancelAll();
                 OVESP_Logout();
             }
         });
@@ -114,6 +107,37 @@ public class WindowClient extends JFrame {
                         OVESP_Consult(articleEnCours);
                     }
                 }
+            }
+        });
+        btnDelete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (tablePanier.getSelectedRow() == -1)
+                    JOptionPane.showMessageDialog(null, "Veuillez sélectionner un article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+                else{
+                    OVESP_Cancel();
+                    OVESP_Caddie();
+                    OVESP_Consult(articleEnCours);
+                }
+            }
+        });
+        btnVider.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+                if (OVESP_CancelAll())
+                    JOptionPane.showMessageDialog(null, "Votre panier à bien été vidé", "Panier vidé", JOptionPane.INFORMATION_MESSAGE);
+                else
+                    JOptionPane.showMessageDialog(null, "Erreur durant la suppresion de l'article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+                OVESP_Caddie();
+                OVESP_Consult(articleEnCours);
+            }
+        });
+        btnConfirm.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                OVESP_Confirmer();
+                viderCaddie();
             }
         });
     }
@@ -167,6 +191,7 @@ public class WindowClient extends JFrame {
         btnDelete.setEnabled(false);
         btnVider.setEnabled(false);
         btnConfirm.setEnabled(false);
+        viderCaddie();
 
         // les champs du magasin
         tfStock.setText("");
@@ -190,6 +215,16 @@ public class WindowClient extends JFrame {
         tfStock.setText(stock);
         tfPrice.setText(prix);
         tfImage.setIcon(new ImageIcon("src/Images/" + image));
+    }
+
+    /**
+     * Permet de vider le panier et mettre à 0 le prix dans le GUI
+     */
+    public void viderCaddie(){
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[]{"Article", "Prix à l'unité", "Quantité"});
+        tablePanier.setModel(model);
+        tfTotal.setText("0.00");
     }
 
     //********** Fonction de protocol OVESP **********************************
@@ -329,6 +364,67 @@ public class WindowClient extends JFrame {
 
         tfTotal.setText(String.valueOf(prixTotal));
         tablePanier.setModel(model);
+
+    }
+
+    /**
+     * Permet de supprimer un article du caddie
+     */
+    public void OVESP_Cancel(){
+        String data;
+        String response;
+
+        // Envoie de la requete
+        data = "CANCEL#" + tablePanier.getSelectedRow();
+        serverConnection.send(data);
+
+        // Reception et parsing de la reponse
+        response = serverConnection.receive();
+        String[] champs = response.split("#");
+
+        if (champs[1].equals("ko"))
+            JOptionPane.showMessageDialog(null, "Erreur durant la suppresion de l'article", "Erreur de suppression", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Supprime tous les articles du caddie
+     */
+    public boolean OVESP_CancelAll(){
+        String data;
+        String response;
+
+        // Envoie de la requete
+        data = "CANCELALL#" + tablePanier.getSelectedRow();
+        serverConnection.send(data);
+
+        // Reception et parsing de la reponse
+        response = serverConnection.receive();
+        String[] champs = response.split("#");
+        if (champs[1].equals("ko"))
+            return false;
+        else
+            return true;
+
+
+    }
+
+    public void OVESP_Confirmer(){
+        String data;
+        String response;
+
+        // Envoie de la requete
+        data = "CONFIRMER#" + idClient;
+        serverConnection.send(data);
+
+        // Reception et parsing de la reponse
+        response = serverConnection.receive();
+        String[] champs = response.split("#");
+
+        if (champs[1].equals("ko"))
+            JOptionPane.showMessageDialog(null, "Une erreur est survenue lors du passage de la commande", "Erreur de commande", JOptionPane.ERROR_MESSAGE);
+        else
+            JOptionPane.showMessageDialog(null, "La commande à bien été envoyé au Maraîcher. Numéro de facture : " + champs[2], "Commande réussi", JOptionPane.INFORMATION_MESSAGE);
+
 
     }
 }
