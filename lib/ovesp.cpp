@@ -500,26 +500,30 @@ int OVESP_Confirmer(MYSQL* connexion, CaddieArticle caddie[10], int idClient)
     MYSQL_RES  *resultat;
     MYSQL_ROW  tuple;
 
-    for (int i = 0; i < 10; ++i)
-    {
-        if (caddie[i].idArticle != -1)
-        {
-            total += caddie[i].prix * caddie[i].stock;
-            caddie[i].idArticle = -1;
-        }
-         
-    } 
-
-    sprintf(requete,"insert into factures values (NULL, %d, %f, CURRENT_TIMESTAMP, false);", idClient, total); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente // CURRENT_TIMESTAMP est gerer par mySQL
-    mysql_query(connexion,requete);
-
     sprintf(requete,"select max(id) from factures;"); // on recupere le "dernier" numero de facture
     mysql_query(connexion,requete);
     resultat = mysql_store_result(connexion);
     if (resultat) 
     {
         tuple = mysql_fetch_row(resultat);
-        numFacture = atoi(tuple[0]);
+        numFacture = atoi(tuple[0]) + 1;
+
+        for (int i = 0; i < 10; ++i)
+        {
+            if (caddie[i].idArticle != -1)
+            {
+                sprintf(requete,"insert into ventes values (%d, %d, %d);", numFacture, caddie[i].idArticle, caddie[i].stock);
+                mysql_query(connexion,requete);
+
+                total += caddie[i].prix * caddie[i].stock;
+                caddie[i].idArticle = -1;
+            }
+             
+        } 
+        sprintf(requete,"insert into factures values (NULL, %d, %f, CURRENT_TIMESTAMP, false);", idClient, total); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente // CURRENT_TIMESTAMP est gerer par mySQL
+        mysql_query(connexion,requete);
+
+        
     }
    
     return numFacture;
