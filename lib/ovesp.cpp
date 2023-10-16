@@ -65,7 +65,6 @@ void OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
                 case -5: sprintf(reponse, "LOGIN#ko#Le nom d'utilisateur n'existe pas dans la base de données");
                         break;
                 default: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté#%d", rep);
-                         printf("DEBUG DEDE: %d\n", rep);
                         break;
             }
             return;
@@ -205,38 +204,6 @@ void OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
         sprintf(reponse, "LOGOUT#ok");
         return;
     }
-
-    // ***** OPER *******************************************
-    if (strcmp(ptr, "OPER") == 0)
-    {
-        char op;
-        int a, b;
-        ptr = strtok(NULL, "#");
-        op = ptr[0];
-        a = atoi(strtok(NULL, "#"));
-        b = atoi(strtok(NULL, "#"));
-        printf("\t[THREAD %p] OPERATION %d %c %d\n", pthread_self(), a, op, b);
-
-        if (estPresent(socket) == -1)
-        {
-            sprintf(reponse, "OPER#ko#Client non loggé !");
-            return;
-        }
-        else
-        {
-            try
-            {
-                int resultat = OVESP_Operation(op, a, b);
-                sprintf(reponse, "OPER#ok#%d", resultat);
-                return;
-            }
-            catch (int)
-            {
-                sprintf(reponse, "OPER#ko#Division par zéro !");
-                return;
-            }
-        }
-    }
 }
 
 
@@ -314,21 +281,6 @@ int OVESP_Login(const char* user, const char* password, int newClient, MYSQL* co
 
 }
 
-int OVESP_Operation(char op, int a, int b)
-{
-    if (op == '+') return a + b;
-    if (op == '-') return a - b;
-    if (op == '*') return a * b;
-
-    if (op == '/')
-    {
-        if (b == 0) throw 1;
-        return a / b;
-    }
-
-    return 0;
-}
-
 Article OVESP_Consult(int idArticle, MYSQL* connexion)
 {
     Article response;
@@ -404,7 +356,7 @@ int OVESP_Achat(int idArticle, MYSQL* connexion, int quantite, CaddieArticle cad
             caddie[caddieFree].stock =  quantite;
             strcpy(caddie[caddieFree].image, tuple[4]); 
 
-            printCaddie(caddie); // Fct de debug qui permet de print le caddie
+            // printCaddie(caddie); // Fct de debug qui permet de print le caddie
 
             return 0;
         }
@@ -444,8 +396,6 @@ char* OVESP_Caddie(struct CaddieArticle caddie[10]) {
     else
         sprintf(rep, "0");
     
-
-    printf("%s\n", rep); // debug
     return rep;
 }
 

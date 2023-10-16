@@ -84,7 +84,7 @@ int main(int argc,char *argv[])
 
   printf("Ajout de quelques ventes\n");
 
-  sprintf(requete,"insert into ventes values (5,6,7);"); 
+  sprintf(requete,"insert into ventes values (1,6,7);"); 
   mysql_query(connexion,requete);
 
   // Deconnection de la BD
