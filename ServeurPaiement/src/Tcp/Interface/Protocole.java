@@ -1,4 +1,6 @@
-package Tcp;
+package Tcp.Interface;
+
+import Tcp.FinConnexionException;
 
 import java.net.Socket;
 

@@ -1,7 +1,16 @@
 package Tcp;
 
+import Tcp.Interface.Protocole;
+import Tcp.Interface.Reponse;
+import Tcp.Interface.Requete;
+
 import java.io.*;
 import java.net.Socket;
+
+/**
+ * Thread (lancé dans le processus serveur) chargé de s’occuper entièrement de la connexion de
+ * ce client
+ */
 public abstract class ThreadClient extends Thread
 {
     protected Protocole protocole;

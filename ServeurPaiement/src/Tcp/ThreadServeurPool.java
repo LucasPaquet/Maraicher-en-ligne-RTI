@@ -1,5 +1,7 @@
 package Tcp;
 
+import Tcp.Interface.Protocole;
+
 import java.io.IOException;
 import java.net.*;
 public class ThreadServeurPool extends ThreadServeur

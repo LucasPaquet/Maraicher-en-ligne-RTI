@@ -1,15 +1,19 @@
-package Tcp;
+package VESPAP;
+
+import Tcp.Interface.Protocole;
+import Tcp.ThreadServeur;
+import Tcp.ThreadServeurPool;
 
 import java.io.IOException;
 
-public class ServeurLILOC {
+public class ServeurVESPAP {
     ThreadServeur threadServeur;
 
-    public ServeurLILOC() {
+    public ServeurVESPAP() {
         threadServeur = null;
         try
         {
-            Protocole protocole = new LILOC();
+            Protocole protocole = new VESPAP();
             int port = 50000;
             int taillePool = 5;
 

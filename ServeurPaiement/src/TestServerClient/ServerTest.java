@@ -1,9 +1,9 @@
 package TestServerClient;
 
-import Tcp.ServeurLILOC;
+import VESPAP.ServeurVESPAP;
 
 public class ServerTest {
     public static void main(String[] args) {
-        ServeurLILOC sl= new ServeurLILOC();
+        ServeurVESPAP sl= new ServeurVESPAP();
     }
 }

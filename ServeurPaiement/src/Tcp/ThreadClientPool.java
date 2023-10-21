@@ -1,5 +1,7 @@
 package Tcp;
 
+import Tcp.Interface.Protocole;
+
 import java.io.IOException;
 public class ThreadClientPool extends ThreadClient
 {

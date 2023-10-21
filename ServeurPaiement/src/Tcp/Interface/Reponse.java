@@ -1,4 +1,4 @@
-package Tcp;
+package Tcp.Interface;
 
 import java.io.Serializable;
 

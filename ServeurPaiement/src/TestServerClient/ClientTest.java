@@ -1,10 +1,10 @@
 package TestServerClient;
 
 
-import Tcp.ClientLILOC;
+import VESPAP.ClientVESPAP;
 
 public class ClientTest {
     public static void main(String[] args) {
-        ClientLILOC cl = new ClientLILOC();
+        ClientVESPAP cl = new ClientVESPAP();
     }
 }

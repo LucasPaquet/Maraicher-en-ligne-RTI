@@ -1,17 +1,17 @@
-package Tcp;
+package VESPAP;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ClientLILOC {
+public class ClientVESPAP {
     private Socket socket;
     private String login;
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
 
-    public ClientLILOC() {
+    public ClientVESPAP() {
         oos = null;
         ois = null;
 
@@ -33,6 +33,14 @@ public class ClientLILOC {
             {
                 System.out.println("[CLIENT] Je suis connecté");
                 this.login = login;
+
+                System.out.println("[CLIENT] Je vais me déconnecter");
+
+                RequeteLOGOUT requetes = new RequeteLOGOUT(login);
+                oos.writeObject(requetes);
+                oos.close();
+                ois.close();
+                socket.close();
             }
             else
             {
@@ -44,6 +52,8 @@ public class ClientLILOC {
         {
             System.out.println("ERREUR 2");
         }
+
+
     }
 
     public static void main(String[] args) {

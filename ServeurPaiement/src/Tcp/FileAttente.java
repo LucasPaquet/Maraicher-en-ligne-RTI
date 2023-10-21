@@ -2,6 +2,10 @@ package Tcp;
 
 import java.net.Socket;
 import java.util.LinkedList;
+
+/**
+ * Classe qui permet de stocker les connexions en attentes
+ */
 public class FileAttente {
     private LinkedList<Socket> fileAttente;
 

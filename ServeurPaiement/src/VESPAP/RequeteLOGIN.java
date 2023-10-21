@@ -1,4 +1,6 @@
-package Tcp;
+package VESPAP;
+
+import Tcp.Interface.Requete;
 
 public class RequeteLOGIN implements Requete
 {

@@ -1,4 +1,6 @@
-package Tcp;
+package VESPAP;
+
+import Tcp.Interface.Reponse;
 
 public class ReponseLOGIN implements Reponse
 {
