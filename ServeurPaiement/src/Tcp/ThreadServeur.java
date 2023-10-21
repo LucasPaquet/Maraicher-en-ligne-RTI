@@ -6,8 +6,6 @@ public abstract class ThreadServeur extends Thread
 {
     protected int port;
     protected Protocole protocole;
-    protected Logger logger;
-
     protected ServerSocket ssocket;
 
     public ThreadServeur(int port, Protocole protocole) throws
@@ -16,7 +14,6 @@ public abstract class ThreadServeur extends Thread
         super("TH Serveur (port=" + port + ",protocole=" + protocole.getNom() + ")");
         this.port = port;
         this.protocole = protocole;
-        this.logger = null;
 
         ssocket = new ServerSocket(port);
     }

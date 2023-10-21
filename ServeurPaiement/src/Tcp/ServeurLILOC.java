@@ -1,10 +1,8 @@
 package Tcp;
 
 import java.io.IOException;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
-public class ServeurLILOC implements Logger{
+
+public class ServeurLILOC {
     ThreadServeur threadServeur;
 
     public ServeurLILOC() {
@@ -29,15 +27,5 @@ public class ServeurLILOC implements Logger{
         {
             System.out.println("ERREUR 2");
         }
-    }
-
-    @Override
-    public void Trace(String message) {
-
-    }
-
-    public static void main(String[] args) {
-
-
     }
 }

@@ -8,26 +8,11 @@ public class LILOC implements Protocole
     private HashMap<String,String> passwords;
     private HashMap<String,Socket> clientsConnectes;
 
-    private Logger logger;
-
-    public LILOC(Logger log)
-    {
-        passwords = new HashMap<>();
-        passwords.put("wagner","abcd");
-        passwords.put("charlet","1234");
-        passwords.put("calmant","azerty");
-
-        logger = log;
-
-        clientsConnectes = new HashMap<>();
-    }
-
     public LILOC() {
         passwords = new HashMap<>();
         passwords.put("wagner","abcd");
         passwords.put("charlet","1234");
         passwords.put("calmant","azerty");
-        logger = null;
         clientsConnectes = new HashMap<>();
     }
 
@@ -45,8 +30,7 @@ public class LILOC implements Protocole
         return null;
     }
 
-    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGIN requete, Socket
-            socket) throws FinConnexionException
+    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGIN requete, Socket socket) throws FinConnexionException
     {
         System.out.println("RequeteLOGIN reçue de " + requete.getLogin());
         String password = passwords.get(requete.getLogin());
