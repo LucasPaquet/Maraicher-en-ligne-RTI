@@ -4,6 +4,7 @@ import VESPAP.ClientVESPAP;
 import VESPAP.Facture;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -17,13 +18,21 @@ public class MainWindow extends JFrame{
     private JButton btnLogout;
     private JPanel JPaneLogin;
     private JPanel JPaneFacture;
-    private JTable table1;
+    private JTable tableFacture;
     private JButton btnBuy;
     private JButton btnSearch;
     private JPanel JPaneMain;
+    private JScrollPane JPaneScroolFacture;
 
     public MainWindow() {
+
+        // Connexion serveur
         ClientVESPAP cl = new ClientVESPAP("127.0.0.1", 50000);
+
+        tableFacture.setDefaultEditor(Object.class, null);
+        tableFacture.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableFacture.setRowSelectionAllowed(true);
+        tableFacture.setColumnSelectionAllowed(false);
 
         setTitle("Le Maraicher en ligne");
         setContentPane(JPaneMain);
@@ -60,6 +69,19 @@ public class MainWindow extends JFrame{
                 factures = cl.VESPAP_GetFactures(1);
 
                 System.out.println(factures.toString());
+                DefaultTableModel model = new DefaultTableModel();
+                model.setColumnIdentifiers(new String[]{"Id", "Id client", "Prix", "Date", "Payé"});
+
+                for (int i = 0; i<factures.size(); i++){
+                    // Définir les noms des colonnes
+                    model.addRow(new Object[]{factures.get(i).getIdFacture(),
+                            factures.get(i).getIdClient(),
+                            factures.get(i).getPrix(),
+                            factures.get(i).getDate(),
+                            factures.get(i).isPaye()});
+                }
+
+                tableFacture.setModel(model);
             }
         });
     }
