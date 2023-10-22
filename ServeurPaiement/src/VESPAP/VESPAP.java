@@ -8,6 +8,7 @@ import Tcp.Interface.Requete;
 
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 
 public class VESPAP implements Protocole
 {
@@ -25,11 +26,14 @@ public class VESPAP implements Protocole
         return "VESPAP";
     }
     @Override
-    public synchronized Reponse TraiteRequete(Requete requete, Socket socket) throws
-            FinConnexionException
+    public synchronized Reponse TraiteRequete(Requete requete, Socket socket) throws FinConnexionException
     {
-        if (requete instanceof RequeteLOGIN) return TraiteRequeteLOGIN((RequeteLOGIN) requete, socket);
-        if (requete instanceof RequeteLOGOUT) TraiteRequeteLOGOUT((RequeteLOGOUT) requete);
+        if (requete instanceof RequeteLOGIN)
+            return TraiteRequeteLOGIN((RequeteLOGIN) requete, socket);
+        if (requete instanceof RequeteLOGOUT)
+            TraiteRequeteLOGOUT((RequeteLOGOUT) requete);
+        if (requete instanceof RequeteGetFactures)
+            return TraiteRequeteGetFactures((RequeteGetFactures) requete);
         return null;
     }
 
@@ -55,6 +59,15 @@ public class VESPAP implements Protocole
         clientsConnectes.remove(requete.getLogin());
         System.out.println(requete.getLogin() + " correctement déloggé");
         // throw new FinConnexionException(null);
+    }
+
+    private synchronized ReponseGetFactures TraiteRequeteGetFactures(RequeteGetFactures requete)
+    {
+        List<Facture> factures = null;
+
+        factures = db.getFacture(requete.getIdClient());
+
+        return new ReponseGetFactures(factures);
     }
 
 

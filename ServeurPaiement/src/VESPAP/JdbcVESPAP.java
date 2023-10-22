@@ -4,6 +4,8 @@ import JDBC.DatabaseConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JdbcVESPAP {
@@ -29,21 +31,23 @@ public class JdbcVESPAP {
     }
 
     public List<Facture> getFacture(int idClient){
-        List<Facture> rep = null;
+        List<Facture> factures = new ArrayList<>();
         try {
-            ResultSet rs = dbConnect.executeQuery("select * from factures where id = " + idClient + ";");
+            ResultSet rs = dbConnect.executeQuery("select * from factures where idClient = " + idClient + ";");
             while (rs.next()) { // Si au moins une ligne correspond
-                rep.add(new Facture(rs.getInt("id"),
+
+                factures.add(new Facture(rs.getInt("id"),
                         rs.getInt("idClient"),
                         rs.getFloat("prix"),
                         rs.getTimestamp("date"),
                         rs.getBoolean("paye")));
+
+
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return rep;
+        return factures;
     }
 
 

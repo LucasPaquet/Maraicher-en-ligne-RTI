@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientVESPAP {
     private Socket socket;
@@ -61,8 +62,25 @@ public class ClientVESPAP {
         catch (IOException ex) {
             System.out.println("ERREUR : " + ex);
         }
+    }
 
+    public List<Facture> VESPAP_GetFactures(int idClient){
 
+        try {
+
+            // Creation et envoie de la requete
+            RequeteGetFactures requete = new RequeteGetFactures(idClient);
+            System.out.println("envoie requete");
+            oos.writeObject(requete);
+
+            // Réception réponse
+            ReponseGetFactures reponse = (ReponseGetFactures) ois.readObject();
+            return reponse.getFactures();
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        }
+        return null;
     }
 
 }
