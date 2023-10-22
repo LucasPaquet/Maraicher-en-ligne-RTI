@@ -53,11 +53,14 @@ int main(int argc,char *argv[])
   mysql_query(connexion,"drop table clients;");
   mysql_query(connexion,"drop table factures;");
   mysql_query(connexion,"drop table ventes;");
+  mysql_query(connexion,"drop table employes;");
 
   mysql_query(connexion,"create table articles (id INT(4) auto_increment primary key, intitule varchar(20),prix FLOAT(4),stock INT(4),image varchar(20));");
   mysql_query(connexion,"create table clients (id INT(4) auto_increment primary key,nom varchar(50),mdp varchar(50));");
   mysql_query(connexion,"create table factures (id INT(4) auto_increment primary key, idClient INT(4), prix FLOAT(4), date DATETIME, paye BOOLEAN);");
   mysql_query(connexion,"create table ventes (idFacture INT(4), idArticle INT(4), quantite INT(4));");
+  mysql_query(connexion,"create table employes (id INT(4) auto_increment primary key,nom varchar(50),mdp varchar(50));");
+
 
   // Ajout de tuples dans la table UNIX_FINAL
   printf("Ajout de 21 articles la table articles...\n");
@@ -85,6 +88,20 @@ int main(int argc,char *argv[])
   printf("Ajout de quelques ventes\n");
 
   sprintf(requete,"insert into ventes values (1,6,7);"); 
+  mysql_query(connexion,requete);
+
+  printf("Ajout des employes\n");
+
+  sprintf(requete,"insert into employes values (NULL, 'a', 'a');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+  mysql_query(connexion,requete);
+
+  sprintf(requete,"insert into employes values (NULL, 'admin', 'admin');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+  mysql_query(connexion,requete);
+
+  sprintf(requete,"insert into employes values (NULL, 'paquet', 'lucas');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
+  mysql_query(connexion,requete);
+  
+  sprintf(requete,"insert into employes values (NULL, 'farine', 'nathan');"); // on met NULL dans le premier champs car c'est l'id qui s'auto incremente
   mysql_query(connexion,requete);
 
   // Deconnection de la BD
