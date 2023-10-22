@@ -65,7 +65,7 @@ public abstract class ThreadClient extends Thread
                     oos.writeObject(ex.getReponse());
             }
         }
-        catch (IOException ex) { System.out.println("Erreur I/O"); }
+        catch (IOException ex) { System.out.println("Erreur I/O : " +ex ); }
         catch (ClassNotFoundException ex) { System.out.println("Erreur requete invalide");
         }
         finally

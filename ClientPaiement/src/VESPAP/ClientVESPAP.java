@@ -11,52 +11,56 @@ public class ClientVESPAP {
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
 
-    public ClientVESPAP() {
+    public ClientVESPAP(String ip, int port) {
         oos = null;
         ois = null;
 
-        String ipServeur = "127.0.0.1";
-        int portServeur = 50000;
-        String login = "wagner";
-        String password = "abcd";
+        try {
+            socket = new Socket(ip, port);
 
-        try
-        {
-            System.out.println("[CLIENT] Connexion au serveur");
-            socket = new Socket(ipServeur,portServeur);
-            RequeteLOGIN requete = new RequeteLOGIN(login,password);
             oos = new ObjectOutputStream(socket.getOutputStream());
             ois = new ObjectInputStream(socket.getInputStream());
-            oos.writeObject(requete);
-            ReponseLOGIN reponse = (ReponseLOGIN) ois.readObject();
-            if (reponse.isValide())
-            {
-                System.out.println("[CLIENT] Je suis connecté");
-                this.login = login;
 
-                System.out.println("[CLIENT] Je vais me déconnecter");
-
-                RequeteLOGOUT requetes = new RequeteLOGOUT(login);
-                oos.writeObject(requetes);
-                oos.close();
-                ois.close();
-                socket.close();
-            }
-            else
-            {
-                System.out.println("[CLIENT] Je suis PAS connecté :(");
-                socket.close();
-            }
-        }
-        catch (IOException | ClassNotFoundException ex)
-        {
+        } catch (IOException ex) {
             System.out.println("ERREUR 2");
         }
 
 
     }
 
-    public static void main(String[] args) {
+    public boolean VESPAP_Login(String log, String mdp){
+
+        try {
+
+            // Creation et envoie de la requete
+            RequeteLOGIN requete = new RequeteLOGIN(log, mdp);
+            oos.writeObject(requete);
+
+            // Réception réponse
+            ReponseLOGIN reponse = (ReponseLOGIN) ois.readObject();
+
+            if (reponse.isValide()) {
+                System.out.println("[CLIENT] Je suis connecté");
+                this.login = log;
+                return true;
+            } else {
+                System.out.println("[CLIENT] Je suis PAS connecté :(");
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        }
+        return false;
+    }
+
+    public void VESPAP_Logout(){
+        try {
+            RequeteLOGOUT requetes = new RequeteLOGOUT(login);
+            oos.writeObject(requetes);
+        }
+        catch (IOException ex) {
+            System.out.println("ERREUR : " + ex);
+        }
 
 
     }

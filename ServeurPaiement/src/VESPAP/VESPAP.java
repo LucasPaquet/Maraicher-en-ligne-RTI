@@ -1,5 +1,6 @@
 package VESPAP;
 
+import JDBC.DatabaseConnection;
 import Tcp.FinConnexionException;
 import Tcp.Interface.Protocole;
 import Tcp.Interface.Reponse;
@@ -10,15 +11,12 @@ import java.util.HashMap;
 
 public class VESPAP implements Protocole
 {
-    private HashMap<String,String> passwords;
+    JdbcVESPAP db;
     private HashMap<String,Socket> clientsConnectes;
 
-    public VESPAP() {
-        passwords = new HashMap<>();
-        passwords.put("wagner","abcd");
-        passwords.put("charlet","1234");
-        passwords.put("calmant","azerty");
+    public VESPAP(DatabaseConnection dbc) {
         clientsConnectes = new HashMap<>();
+        db = new JdbcVESPAP(dbc);
     }
 
     @Override
@@ -37,29 +35,26 @@ public class VESPAP implements Protocole
 
     private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGIN requete, Socket socket) throws FinConnexionException
     {
-        System.out.println("RequeteLOGIN reçue de " + requete.getLogin());
-        String password = passwords.get(requete.getLogin());
-        if (password != null)
-            if (password.equals(requete.getPassword()))
-            {
-                String ipPortClient = socket.getInetAddress().getHostAddress() + "/"
-                        + socket.getPort();
-                System.out.println(requete.getLogin() + " correctement loggé de " +
-                        ipPortClient);
-                clientsConnectes.put(requete.getLogin(),socket);
-                return new ReponseLOGIN(true);
-            }
+        if (db.checkLogin(requete.getLogin(), requete.getPassword()) == 0){
+            String ipPortClient = socket.getInetAddress().getHostAddress() + "/"
+                    + socket.getPort();
+            System.out.println(requete.getLogin() + " correctement loggé de " +
+                    ipPortClient);
+            clientsConnectes.put(requete.getLogin(),socket);
+            return new ReponseLOGIN(true);
+        }
+
+        // Si pas logge
         System.out.println(requete.getLogin() + " --> erreur de login");
-        throw new FinConnexionException(new ReponseLOGIN(false));
+        return new ReponseLOGIN(false);
     }
 
-    private synchronized void TraiteRequeteLOGOUT(RequeteLOGOUT requete) throws
-            FinConnexionException
+    private synchronized void TraiteRequeteLOGOUT(RequeteLOGOUT requete)//  throws FinConnexionException
     {
         System.out.println("RequeteLOGOUT reçue de " + requete.getLogin());
         clientsConnectes.remove(requete.getLogin());
         System.out.println(requete.getLogin() + " correctement déloggé");
-        throw new FinConnexionException(null);
+        // throw new FinConnexionException(null);
     }
 
 

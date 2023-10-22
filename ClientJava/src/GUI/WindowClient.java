@@ -53,7 +53,7 @@ public class WindowClient extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // pour implementer les fonctions de fenetre de bas (exit, agrandir, ...)
         pack();
 
-        serverConnection = new TcpConnection("192.168.230.128", 50000);
+        serverConnection = new TcpConnection("192.168.28.128", 50000);
 
         //********** Fermer la fenetre ***************
         addWindowListener(new WindowAdapter() {
