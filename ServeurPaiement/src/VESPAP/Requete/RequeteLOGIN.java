@@ -1,4 +1,4 @@
-package VESPAP;
+package VESPAP.Requete;
 
 import Tcp.Interface.Requete;
 

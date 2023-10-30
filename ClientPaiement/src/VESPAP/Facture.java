@@ -5,11 +5,11 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 public class Facture implements Serializable {
-    private int idFacture;
-    private int idClient;
-    private float prix;
-    private Timestamp date;
-    private boolean paye;
+    private final int idFacture;
+    private final int idClient;
+    private final float prix;
+    private final Timestamp date;
+    private final boolean paye;
 
     public Facture(int idFacture, int idClient, float prix, Timestamp date, boolean paye) {
         this.idFacture = idFacture;
@@ -19,48 +19,28 @@ public class Facture implements Serializable {
         this.paye = paye;
     }
 
-    public Facture() {
-    }
+
 
     public int getIdFacture() {
         return idFacture;
-    }
-
-    public void setIdFacture(int idFacture) {
-        this.idFacture = idFacture;
     }
 
     public int getIdClient() {
         return idClient;
     }
 
-    public void setIdClient(int idClient) {
-        this.idClient = idClient;
-    }
-
     public float getPrix() {
         return prix;
-    }
-
-    public void setPrix(float prix) {
-        this.prix = prix;
     }
 
     public Timestamp getDate() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
-        this.date = date;
-    }
-
     public boolean isPaye() {
         return paye;
     }
 
-    public void setPaye(boolean paye) {
-        this.paye = paye;
-    }
 
 
 

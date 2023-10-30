@@ -33,7 +33,7 @@ public class JdbcVESPAP {
     public List<Facture> getFacture(int idClient){
         List<Facture> factures = new ArrayList<>();
         try {
-            ResultSet rs = dbConnect.executeQuery("select * from factures where idClient = " + idClient + ";");
+            ResultSet rs = dbConnect.executeQuery("select * from factures where idClient = " + idClient + " and paye = false;");
             while (rs.next()) { // Si au moins une ligne correspond
 
                 factures.add(new Facture(rs.getInt("id"),
@@ -48,6 +48,19 @@ public class JdbcVESPAP {
             throw new RuntimeException(e);
         }
         return factures;
+    }
+
+    public boolean payFacture(int idFacture){
+
+        try {
+            int result = dbConnect.executeUpdate("update factures set paye = true where id = " + idFacture + ";");
+            return result == 1;
+
+        } catch (SQLException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+        return false;
+
     }
 
 

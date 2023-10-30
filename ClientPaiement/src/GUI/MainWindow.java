@@ -5,8 +5,6 @@ import VESPAP.Facture;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
@@ -23,11 +21,14 @@ public class MainWindow extends JFrame{
     private JButton btnSearch;
     private JPanel JPaneMain;
     private JScrollPane JPaneScroolFacture;
+    private JTextField tfClient;
+    private JPanel JpaneSearchClient;
+    private final ClientVESPAP cl;
 
     public MainWindow() {
 
         // Connexion serveur
-        ClientVESPAP cl = new ClientVESPAP("127.0.0.1", 50000);
+        cl = new ClientVESPAP("127.0.0.1", 50000);
 
         tableFacture.setDefaultEditor(Object.class, null);
         tableFacture.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -37,6 +38,7 @@ public class MainWindow extends JFrame{
         setTitle("Le Maraicher en ligne");
         setContentPane(JPaneMain);
         pack();
+        setLocation(400,200);
 
         //********** Fermer la fenetre ***************
         addWindowListener(new WindowAdapter() {
@@ -47,42 +49,16 @@ public class MainWindow extends JFrame{
         });
 
         //********* Clique sur bouton *****************
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (cl.VESPAP_Login(tfNom.getText(), tfMdp.getText()))
-                    LoginOK();
-            }
+        btnLogin.addActionListener(actionEvent -> VESPAPLogin());
+
+        btnLogout.addActionListener(actionEvent -> {
+            cl.VESPAP_Logout();
+            LogoutOK();
         });
-        btnLogout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                cl.VESPAP_Logout();
-                LogoutOK();
-            }
-        });
-        btnSearch.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                List<Facture> factures = null;
-
-                factures = cl.VESPAP_GetFactures(1);
-
-                System.out.println(factures.toString());
-                DefaultTableModel model = new DefaultTableModel();
-                model.setColumnIdentifiers(new String[]{"Id", "Id client", "Prix", "Date", "Payé"});
-
-                for (int i = 0; i<factures.size(); i++){
-                    // Définir les noms des colonnes
-                    model.addRow(new Object[]{factures.get(i).getIdFacture(),
-                            factures.get(i).getIdClient(),
-                            factures.get(i).getPrix(),
-                            factures.get(i).getDate(),
-                            factures.get(i).isPaye()});
-                }
-
-                tableFacture.setModel(model);
-            }
+        btnSearch.addActionListener(actionEvent -> VESPAPGetFactures());
+        btnBuy.addActionListener(actionEvent -> {
+            VESPAP_Payer();
+            VESPAPGetFactures();
         });
     }
 
@@ -98,6 +74,7 @@ public class MainWindow extends JFrame{
         // Partie Facture
         btnBuy.setEnabled(true);
         btnSearch.setEnabled(true);
+        tfClient.setEnabled(true);
     }
 
     private void LogoutOK(){
@@ -106,9 +83,107 @@ public class MainWindow extends JFrame{
         tfNom.setEnabled(true);
         btnLogin.setEnabled(true);
         btnLogout.setEnabled(false);
+        tfNom.setText("");
+        tfMdp.setText("");
 
         // Partie Facture
         btnBuy.setEnabled(false);
         btnSearch.setEnabled(false);
+        tfClient.setEnabled(false);
+        tfClient.setText("");
+        viderTableFactures();
+
     }
+    private void viderTableFactures(){
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[]{"ID facture", "ID client", "Prix", "Date", "Payé"});
+        tableFacture.setModel(model);
+    }
+
+    //********** Fonction de protocol VESPAP **********************************
+    private void VESPAPLogin(){
+
+        if(tfNom.getText().isEmpty() || tfMdp.getText().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Remplisez les champs !", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (cl.VESPAP_Login(tfNom.getText(), tfMdp.getText())){
+            JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
+            LoginOK();
+        }
+        else
+            JOptionPane.showMessageDialog(null, "Les identifiants sont incorrects", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
+
+    }
+
+    private void VESPAPGetFactures(){
+        List<Facture> factures;
+
+        try { // si on arrive pas à convertir le chalos quantite en int
+
+            int idClient = Integer.parseInt(tfClient.getText());
+
+            if (idClient > 0){ // pour empecher les nombres negatif
+                factures = cl.VESPAP_GetFactures(idClient);
+
+                if (factures.isEmpty()){ // si il n'y a pas de factures pour le client
+                    JOptionPane.showMessageDialog(null, "Il n'y a pas de facture pour ce client", "Facture non trouvé", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                System.out.println(factures);
+                DefaultTableModel model = new DefaultTableModel();
+                model.setColumnIdentifiers(new String[]{"ID facture", "ID client", "Prix", "Date", "Payé"});
+
+                for (Facture facture : factures) {
+                    // Définir les noms des colonnes
+                    if (facture.isPaye()) // si la factures a ete paye on ne l'affiche pas
+                        continue;
+                    model.addRow(new Object[]{facture.getIdFacture(),
+                            facture.getIdClient(),
+                            facture.getPrix(),
+                            facture.getDate(),
+                            facture.isPaye()});
+                }
+
+                tableFacture.setModel(model);
+            }
+
+            else {
+                JOptionPane.showMessageDialog(null, "Entrez un nombre positif", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Entrez un nombre valide", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    private void VESPAP_Payer(){
+        if (tableFacture.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null, "Sélectionnez la facture à régler", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // On cree la boite de diaglogue et on l'affiche
+        CreditCardEntry dialog = new CreditCardEntry(MainWindow.this);
+        dialog.setModal(true);
+        dialog.setVisible(true);
+
+        if(!dialog.isOk()){ // si on appuie sur annuler
+            JOptionPane.showMessageDialog(null, "La saisie de la carte à été annulé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+
+
+        if (cl.VESPAP_PayFactures(
+                Integer.parseInt(tableFacture.getValueAt(tableFacture.getSelectedRow(), 0).toString()),
+                dialog.getNom(),
+                dialog.getNumVisa()))
+        {
+            JOptionPane.showMessageDialog(null, "La facture a bien été payé", "Payement réussi", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else
+            JOptionPane.showMessageDialog(null, "La facture n'a pas été payé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+    }
+
 }

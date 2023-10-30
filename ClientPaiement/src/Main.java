@@ -1,5 +1,4 @@
 import GUI.MainWindow;
-import VESPAP.ClientVESPAP;
 import com.formdev.flatlaf.FlatLightLaf;
 
 public class Main {

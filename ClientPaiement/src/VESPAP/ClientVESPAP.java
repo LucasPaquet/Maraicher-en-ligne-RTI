@@ -1,5 +1,8 @@
 package VESPAP;
 
+import VESPAP.Reponse.*;
+import VESPAP.Requete.*;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -58,8 +61,11 @@ public class ClientVESPAP {
         try {
             RequeteLOGOUT requetes = new RequeteLOGOUT(login);
             oos.writeObject(requetes);
+
+            // Réception réponse
+            ReponseLogout reponse = (ReponseLogout) ois.readObject();
         }
-        catch (IOException ex) {
+        catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR : " + ex);
         }
     }
@@ -81,6 +87,26 @@ public class ClientVESPAP {
             System.out.println("ERREUR 2" + ex);
         }
         return null;
+    }
+
+    public boolean VESPAP_PayFactures(int numFacture, String nom, String numVisa){
+        try {
+
+            // Creation et envoie de la requete
+            RequetePayFactures requete = new RequetePayFactures(numFacture, nom, numVisa);
+            System.out.println("envoie requete");
+            oos.writeObject(requete);
+
+            // Réception réponse
+            ReponsePayFactures reponse = (ReponsePayFactures) ois.readObject();
+
+            return reponse.isPaid();
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        }
+
+        return false;
     }
 
 }

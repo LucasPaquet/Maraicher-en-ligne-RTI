@@ -1,8 +1,8 @@
-package VESPAP;
-
-import Tcp.Interface.Reponse;
+package VESPAP.Reponse;
 
 import java.util.List;
+import Tcp.Interface.Reponse;
+import VESPAP.Facture;
 
 public class ReponseGetFactures implements Reponse{
     private List<Facture> factures;
