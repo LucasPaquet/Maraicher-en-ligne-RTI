@@ -2,6 +2,7 @@ package Tcp;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class TcpConnection {
 
@@ -41,10 +42,14 @@ public class TcpConnection {
         try {
             StringBuilder buffer = new StringBuilder();
             boolean endOfTransmission = false;
+            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); // pour pouvoir lire les accents correctement
             while (!endOfTransmission) {
-                byte b1 = inputStream.readByte();
+                int b1 = reader.read();
+                if (b1 == -1) {
+                    break; // Si la lecture se passe mal
+                }
                 if (b1 == (byte) '#') {
-                    byte b2 = inputStream.readByte();
+                    int b2 = reader.read();
                     if (b2 == (byte) ')') {
                         endOfTransmission = true;
                     } else {
@@ -60,6 +65,8 @@ public class TcpConnection {
             throw new RuntimeException("Erreur lors de la réception des données", e);
         }
     }
+
+
 
     /**
      * Permet de fermer la connection avec le serveur

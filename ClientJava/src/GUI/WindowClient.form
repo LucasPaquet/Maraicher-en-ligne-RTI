@@ -168,19 +168,6 @@
               <text value="Vider le panier"/>
             </properties>
           </component>
-          <component id="87109" class="javax.swing.JTable" binding="tablePanier">
-            <constraints>
-              <grid row="0" column="0" row-span="3" col-span="3" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="50"/>
-              </grid>
-            </constraints>
-            <properties>
-              <cellSelectionEnabled value="false"/>
-              <columnSelectionAllowed value="false"/>
-              <focusable value="true"/>
-              <rowSelectionAllowed value="true"/>
-            </properties>
-          </component>
           <component id="8eb70" class="javax.swing.JLabel">
             <constraints>
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -200,12 +187,30 @@
               <focusable value="false"/>
             </properties>
           </component>
+          <scrollpane id="fabe8">
+            <constraints>
+              <grid row="0" column="0" row-span="3" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="87109" class="javax.swing.JTable" binding="tablePanier">
+                <constraints/>
+                <properties>
+                  <cellSelectionEnabled value="false"/>
+                  <columnSelectionAllowed value="false"/>
+                  <focusable value="true"/>
+                  <rowSelectionAllowed value="true"/>
+                </properties>
+              </component>
+            </children>
+          </scrollpane>
         </children>
       </grid>
       <grid id="39619" binding="JPaneMagasin" layout-manager="GridLayoutManager" row-count="4" column-count="9" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="5" left="5" bottom="5" right="5"/>
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="9" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="9" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="line" title="Magasin :">
@@ -214,12 +219,12 @@
         <children>
           <vspacer id="2eff8">
             <constraints>
-              <grid row="0" column="2" row-span="4" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="4" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
           <vspacer id="93f3c">
             <constraints>
-              <grid row="0" column="5" row-span="4" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="5" row-span="4" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
           <component id="80267" class="javax.swing.JLabel" binding="tfImage">
@@ -268,7 +273,7 @@
           </component>
           <vspacer id="48cd5">
             <constraints>
-              <grid row="0" column="7" row-span="3" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="7" row-span="3" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
           <component id="7c675" class="javax.swing.JButton" binding="btnNext">

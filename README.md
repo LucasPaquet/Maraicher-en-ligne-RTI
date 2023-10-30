@@ -120,7 +120,7 @@ Cette partie comporte les éléments suivants :
 * le client Java « Paiement » capable de communiquer avec ce serveur
 
 ## Élement associé
-:file_folder:: ClientJava, JavaLib
+:file_folder:: ClientJava, JavaLib, ServeurPaiement
 
 ## L’application « Client Achat » Java
 
@@ -163,6 +163,14 @@ de JDBC ou même du langage SQL.
 
 Attention qu’une seule instance de ce(s) bean(s) ne sera utilisée dans le serveur Paiement et
 que ce serveur sera un serveur multi-threads : attention donc aux <ins>accès concurrents<ins> !
+
+:warning: Ne pas oublier d'ouvrir le port 3306 (port par défaut de MySql) : 
+
+`sudo firewall-cmd --permanent --zone=public --add-port=3306/tcp`
+<br>
+et puis pour recharger :
+<br>
+`sudo firewall-cmd --reload`
 
 ## Le serveur paiement et son application cliente
 
