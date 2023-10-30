@@ -4,8 +4,10 @@ import Tcp.TcpConnection;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class WindowClient extends JFrame {
@@ -51,7 +53,11 @@ public class WindowClient extends JFrame {
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/Images/icon.png"))).getImage()); // pour ajouter une icone a l'app
         setContentPane(JPanelMain);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // pour implementer les fonctions de fenetre de bas (exit, agrandir, ...)
+        setMinimumSize(new Dimension(750,600)); // mettre taille minimum de la fenetre
         pack();
+        setSize(750,600); // le pack() etire fort la table donc on fixe la taille pour que se soit plus jolie
+
+
 
         serverConnection = new TcpConnection("192.168.28.128", 50000);
 
@@ -279,7 +285,20 @@ public class WindowClient extends JFrame {
         String response;
 
         // Envoie de la requete
-        data = "ACHAT#" + articleEnCours + "#" + tfQuantite.getText();
+        try { // si on arrive pas à convertir le chalos quantite en int
+            int quantite = Integer.parseInt(tfQuantite.getText());
+            if (quantite > 0) // pour empecher les nombres negatif
+                data = "ACHAT#" + articleEnCours + "#" + Integer.parseInt(tfQuantite.getText());
+            else {
+                JOptionPane.showMessageDialog(null, "Entrez un nombre positif", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+        catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Entrez un nombre valide", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         serverConnection.send(data);
 
         // Reception et parsing de la reponse
@@ -308,7 +327,7 @@ public class WindowClient extends JFrame {
         String data;
         String response;
         int nbArticle;
-        float prixTotal = 0;
+        double prixTotal = 0;
 
         // Envoie de la requete
         data = "CADDIE" ;
@@ -330,7 +349,13 @@ public class WindowClient extends JFrame {
             prixTotal += Float.parseFloat(champs[(i*5)+5]) * Integer.parseInt(champs[(i*5)+4]);
         }
 
-        tfTotal.setText(String.valueOf(prixTotal));
+
+        // Formater le prix avec deux chiffres après la virgule
+        DecimalFormat df = new DecimalFormat("#.##");
+
+
+
+        tfTotal.setText(df.format(prixTotal));
         tablePanier.setModel(model);
 
     }
