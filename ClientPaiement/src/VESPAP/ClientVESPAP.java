@@ -26,7 +26,7 @@ public class ClientVESPAP {
             ois = new ObjectInputStream(socket.getInputStream());
 
         } catch (IOException ex) {
-            System.out.println("ERREUR 2");
+            System.out.println("ERREUR IO : " + ex);
         }
 
 
@@ -109,4 +109,7 @@ public class ClientVESPAP {
         return false;
     }
 
+    public boolean IsOosNull() {
+        return oos == null;
+    }
 }

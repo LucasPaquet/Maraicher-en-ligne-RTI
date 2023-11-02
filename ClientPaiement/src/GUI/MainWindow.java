@@ -7,7 +7,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 public class MainWindow extends JFrame{
     private JTextField tfNom;
@@ -23,12 +26,16 @@ public class MainWindow extends JFrame{
     private JScrollPane JPaneScroolFacture;
     private JTextField tfClient;
     private JPanel JpaneSearchClient;
-    private final ClientVESPAP cl;
+    private ClientVESPAP cl;
+    private String ip;
+    private int port;
 
     public MainWindow() {
 
+        initConfig();
+
         // Connexion serveur
-        cl = new ClientVESPAP("127.0.0.1", 50000);
+        cl = new ClientVESPAP(ip, port);
 
         tableFacture.setDefaultEditor(Object.class, null);
         tableFacture.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -102,6 +109,11 @@ public class MainWindow extends JFrame{
 
     //********** Fonction de protocol VESPAP **********************************
     private void VESPAPLogin(){
+
+        if (cl.IsOosNull()){
+            JOptionPane.showMessageDialog(null, "Vous n'êtes pas connecté au serveur", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
+            cl = new ClientVESPAP(ip, port); // on retente de se connecte au serveur
+        }
 
         if(tfNom.getText().isEmpty() || tfMdp.getText().isEmpty()){
             JOptionPane.showMessageDialog(null, "Remplisez les champs !", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
@@ -184,6 +196,20 @@ public class MainWindow extends JFrame{
         }
         else
             JOptionPane.showMessageDialog(null, "La facture n'a pas été payé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+    }
+
+    // *********************** LOGIQUE APPLICATION *****************************
+
+    public void initConfig() {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream("src/config.properties")) {
+            properties.load(fis);
+
+            port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
+            ip = properties.getProperty("IP_PAIEMENT");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
