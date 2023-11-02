@@ -45,7 +45,7 @@ public class MainWindow extends JFrame{
         setTitle("Le Maraicher en ligne");
         setContentPane(JPaneMain);
         pack();
-        setLocation(400,200);
+        setLocationRelativeTo(null);
 
         //********** Fermer la fenetre ***************
         addWindowListener(new WindowAdapter() {

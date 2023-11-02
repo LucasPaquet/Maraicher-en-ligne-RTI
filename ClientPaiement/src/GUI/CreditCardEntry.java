@@ -18,7 +18,7 @@ public class CreditCardEntry extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         pack();
-        setLocation(500,400);
+        setLocationRelativeTo(null);
 
         buttonOK.addActionListener(e -> onOK());
 
