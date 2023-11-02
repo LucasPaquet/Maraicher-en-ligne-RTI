@@ -5,14 +5,8 @@ import Tcp.FinConnexionException;
 import Tcp.Interface.Protocole;
 import Tcp.Interface.Reponse;
 import Tcp.Interface.Requete;
-import VESPAP.Reponse.ReponseGetFactures;
-import VESPAP.Reponse.ReponseLOGIN;
-import VESPAP.Reponse.ReponseLogout;
-import VESPAP.Reponse.ReponsePayFactures;
-import VESPAP.Requete.RequeteGetFactures;
-import VESPAP.Requete.RequeteLOGIN;
-import VESPAP.Requete.RequeteLOGOUT;
-import VESPAP.Requete.RequetePayFactures;
+import VESPAP.Reponse.*;
+import VESPAP.Requete.*;
 
 import java.net.Socket;
 import java.util.HashMap;
@@ -45,6 +39,8 @@ public class VESPAP implements Protocole
             return TraiteRequeteGetFactures((RequeteGetFactures) requete);
         if (requete instanceof RequetePayFactures)
             return TraiteRequetePayFactures((RequetePayFactures) requete);
+        if (requete instanceof RequeteGetVente)
+            return TraiteRequeteGetVente((RequeteGetVente) requete);
         return null;
     }
 
@@ -91,8 +87,17 @@ public class VESPAP implements Protocole
         }
         System.out.println("[SERVEUR] Reponse : " + result + "\n");
         return new ReponsePayFactures(result);
+    }
 
+    private synchronized ReponseGetVente TraiteRequeteGetVente(RequeteGetVente requete)
+    {
+        List<Vente> ventes;
 
+        ventes = db.getVente(requete.getIdFacture());
+
+        System.out.println("[SERVEUR] Ventes : " + ventes + "\n");
+
+        return new ReponseGetVente(ventes);
     }
 
     /**

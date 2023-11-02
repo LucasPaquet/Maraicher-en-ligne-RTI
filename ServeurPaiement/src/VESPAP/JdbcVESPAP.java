@@ -63,5 +63,18 @@ public class JdbcVESPAP {
 
     }
 
+    public List<Vente> getVente(int idFacture){
+        List<Vente> ventes = new ArrayList<>();
+        try {
+            ResultSet rs = dbConnect.executeQuery("select * from ventes where idFacture = " + idFacture + ";");
+            while (rs.next()) { // Si au moins une ligne correspond
+                ventes.add(new Vente(rs.getInt("idArticle"), rs.getInt("quantite")));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return ventes;
+    }
+
 
 }
