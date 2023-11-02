@@ -109,6 +109,25 @@ public class ClientVESPAP {
         return false;
     }
 
+    public List<Vente> VESPAP_GetVente(int idFacture){
+
+        try {
+
+            // Creation et envoie de la requete
+            RequeteGetVente requete = new RequeteGetVente(idFacture);
+            System.out.println("envoie requete RequeteGetVente");
+            oos.writeObject(requete);
+
+            // Réception réponse
+            ReponseGetVente reponse = (ReponseGetVente) ois.readObject();
+            return reponse.getVente();
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR IOException : " + ex);
+        }
+        return null;
+    }
+
     public boolean IsOosNull() {
         return oos == null;
     }

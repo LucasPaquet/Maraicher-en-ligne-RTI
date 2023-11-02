@@ -2,8 +2,11 @@ package GUI;
 
 import VESPAP.ClientVESPAP;
 import VESPAP.Facture;
+import VESPAP.Vente;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -26,6 +29,7 @@ public class MainWindow extends JFrame{
     private JScrollPane JPaneScroolFacture;
     private JTextField tfClient;
     private JPanel JpaneSearchClient;
+    private JTable tableVente;
     private ClientVESPAP cl;
     private String ip;
     private int port;
@@ -37,10 +41,19 @@ public class MainWindow extends JFrame{
         // Connexion serveur
         cl = new ClientVESPAP(ip, port);
 
+        // pour qu'on ne puisse que selectionne une seule ligne a la fois
         tableFacture.setDefaultEditor(Object.class, null);
         tableFacture.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableFacture.setRowSelectionAllowed(true);
         tableFacture.setColumnSelectionAllowed(false);
+
+        tableVente.setDefaultEditor(Object.class, null);
+        tableVente.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableVente.setRowSelectionAllowed(true);
+        tableVente.setColumnSelectionAllowed(false);
+
+        viderTableVente(); // pour afficher les noms des colonnes
+        viderTableFacture();
 
         setTitle("Le Maraicher en ligne");
         setContentPane(JPaneMain);
@@ -66,6 +79,17 @@ public class MainWindow extends JFrame{
         btnBuy.addActionListener(actionEvent -> {
             VESPAP_Payer();
             VESPAPGetFactures();
+        });
+
+        // ******* Clique sur ligne du tableau *********
+
+        tableFacture.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    viderTableVente();
+                    VESPAP_GetVente();
+                }
+            }
         });
     }
 
@@ -98,13 +122,20 @@ public class MainWindow extends JFrame{
         btnSearch.setEnabled(false);
         tfClient.setEnabled(false);
         tfClient.setText("");
-        viderTableFactures();
+        viderTableFacture();
+        viderTableVente();
 
     }
-    private void viderTableFactures(){
+    private void viderTableFacture(){
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{"ID facture", "ID client", "Prix", "Date", "Payé"});
         tableFacture.setModel(model);
+    }
+
+    private void viderTableVente(){
+        DefaultTableModel model2 = new DefaultTableModel();
+        model2.setColumnIdentifiers(new String[]{"ID Article", "Quantité"});
+        tableVente.setModel(model2);
     }
 
     //********** Fonction de protocol VESPAP **********************************
@@ -196,6 +227,29 @@ public class MainWindow extends JFrame{
         }
         else
             JOptionPane.showMessageDialog(null, "La facture n'a pas été payé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void VESPAP_GetVente(){
+        List<Vente> ventes;
+        // Recuperation la ligne sélectionnée
+        int selectedRow = tableFacture.getSelectedRow();
+
+        if (selectedRow != -1)
+        {
+            Object data = tableFacture.getValueAt(selectedRow, 0);
+
+            ventes = cl.VESPAP_GetVente(Integer.parseInt(data.toString()));
+
+            DefaultTableModel model = new DefaultTableModel();
+            model.setColumnIdentifiers(new String[]{"ID Article", "Quantité"});
+
+            for (Vente vente : ventes) {
+
+                model.addRow(new Object[]{vente.getIdArticle(), vente.getQuantite()});
+            }
+
+            tableVente.setModel(model);
+        }
     }
 
     // *********************** LOGIQUE APPLICATION *****************************
