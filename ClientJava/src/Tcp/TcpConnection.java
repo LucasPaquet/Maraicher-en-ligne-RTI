@@ -6,16 +6,16 @@ import java.nio.charset.StandardCharsets;
 
 public class TcpConnection {
 
-    private final Socket socket;
-    private final DataOutputStream outputStream;
-    private final DataInputStream inputStream;
+    private Socket socket;
+    private DataOutputStream outputStream;
+    private DataInputStream inputStream;
     public TcpConnection(String host, int port) {
         try {
             socket = new Socket(host, port); // connexion au serveur
             outputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
             inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
         } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de la création de la connexion au serveur", e);
+            System.out.println("ERREUR IOException : " + e);
         }
     }
 
@@ -66,8 +66,6 @@ public class TcpConnection {
         }
     }
 
-
-
     /**
      * Permet de fermer la connection avec le serveur
      */
@@ -77,5 +75,9 @@ public class TcpConnection {
         } catch (IOException e) {
             throw new RuntimeException("Erreur lors de la fermeture de la connexion", e);
         }
+    }
+
+    public boolean IsOosNull(){
+        return outputStream == null;
     }
 }

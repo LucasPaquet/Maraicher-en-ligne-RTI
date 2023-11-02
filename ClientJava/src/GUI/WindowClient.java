@@ -9,6 +9,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DecimalFormat;
 import java.util.Objects;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class WindowClient extends JFrame {
     private JTextField tfNom;
@@ -34,11 +37,13 @@ public class WindowClient extends JFrame {
     private JPanel JPanePublicite;
     private JPanel JPaneMagasin;
 
-    private final TcpConnection serverConnection;
+    private TcpConnection serverConnection;
     private int articleEnCours;
     private int idClient;
+    private String ip;
+    private int port;
 
-    public WindowClient(){
+    public WindowClient(TcpConnection connection){
 
         articleEnCours = 1;
 
@@ -56,18 +61,24 @@ public class WindowClient extends JFrame {
         setMinimumSize(new Dimension(750,600)); // mettre taille minimum de la fenetre
         pack();
         setSize(750,600); // le pack() etire fort la table donc on fixe la taille pour que se soit plus jolie
+        setLocationRelativeTo(null);
 
+        initConfig();
 
-
-        serverConnection = new TcpConnection("192.168.28.128", 50000);
+        serverConnection = connection;
 
         //********** Fermer la fenetre ***************
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                OVESP_CancelAll();
-                OVESP_Logout();
-                serverConnection.close();
+
+                if (!serverConnection.IsOosNull()) // si la connexion existe
+                {
+                    OVESP_CancelAll();
+                    OVESP_Logout();
+                    serverConnection.close();
+                }
+
                 dispose(); // Fermez la fenêtre
             }
         });
@@ -211,6 +222,12 @@ public class WindowClient extends JFrame {
     public boolean OVESP_Login(){
         String data;
         String response;
+
+        if (serverConnection.IsOosNull())
+        {
+            JOptionPane.showMessageDialog(null, "Vous n'êtes pas connecté au serveur", "Erreur de connection", JOptionPane.ERROR_MESSAGE);
+            serverConnection = new TcpConnection(ip, port);
+        }
 
         if (tfNom.getText().isEmpty() || tfMdp.getText().isEmpty()){// si un des deux champs est vide
             JOptionPane.showMessageDialog(null, "Remplisez les champs !", "Erreur de connection", JOptionPane.ERROR_MESSAGE);
@@ -415,7 +432,24 @@ public class WindowClient extends JFrame {
             JOptionPane.showMessageDialog(null, "Une erreur est survenue lors du passage de la commande", "Erreur de commande", JOptionPane.ERROR_MESSAGE);
         else
             JOptionPane.showMessageDialog(null, "La commande à bien été envoyé au Maraîcher. Numéro de facture : " + champs[2], "Commande réussi", JOptionPane.INFORMATION_MESSAGE);
+    }
 
+    // *********************** LOGIQUE APPLICATION *****************************
 
+    /**
+     * Permet de lire le fichhier de configuration pour l'ip et le port
+     */
+    public void initConfig() {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream("src/config.properties")) {
+            properties.load(fis);
+
+            port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
+            ip = properties.getProperty("IP_PAIEMENT");
+
+            System.out.println(port + " "+ ip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
