@@ -64,12 +64,19 @@ void OVESP(char* requete, char* reponse, int socket, MYSQL* connexion, CaddieArt
                         break;
                 case -5: sprintf(reponse, "LOGIN#ko#Le nom d'utilisateur n'existe pas dans la base de données");
                         break;
-                default: sprintf(reponse, "LOGIN#ok#Vous etes bien connecté#%d", rep);
+                default: ajoute(socket);
+                         sprintf(reponse, "LOGIN#ok#Vous etes bien connecté#%d", rep);
                         break;
             }
             return;
             
         }
+    }
+    if (estPresent(socket) == -1)
+    {
+        printf("\t[THREAD %p] Envoie une requete sans etre connecter !\n", pthread_self());
+        sprintf(reponse, "NOLOGGED#ko#0#0#0");
+        return;
     }
 
     // ***** CONSULT ******************************************
