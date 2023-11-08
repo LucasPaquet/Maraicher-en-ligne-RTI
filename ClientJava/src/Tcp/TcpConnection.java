@@ -60,6 +60,7 @@ public class TcpConnection {
                     buffer.append((char) b1);
                 }
             }
+            System.out.println("Client recieve : " + buffer.toString());
             return buffer.toString();
         } catch (IOException e) {
             throw new RuntimeException("Erreur lors de la réception des données", e);

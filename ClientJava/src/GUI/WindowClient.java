@@ -243,8 +243,6 @@ public class WindowClient extends JFrame {
         response = serverConnection.receive();
         String[] champs = response.split("#");
 
-        System.out.println("DEBUG : " + champs[1]);
-
         if (champs[1].equals("ok")){
             JOptionPane.showMessageDialog(null, champs[2], "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
             idClient = Integer.parseInt(champs[3]);
