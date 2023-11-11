@@ -2,6 +2,9 @@ html {
     background: lightyellow;
     padding: 15px;
 }
+body {
+    font-family: Arial, sans-serif;
+}
 h1, h2 {
     color: black;
 }
@@ -9,19 +12,37 @@ h1, h2 {
     text-align: center;
     font-family: "Calibri";
 }
-#tableArticle {
-    border-collapse: collapse; /* Fusionner les bordures adjacentes */
-    border: 3px solid black; /* Bordure du tableau */
-}
-#tableArticle td {
-    border: 1px solid black; /* Bordure des cellules */
-    padding: 8px; /* Espacement interne autour du contenu des
-cellules */
-}
+
 /* Appliquer un style différent à la première ligne */
 #tableArticle tr:first-child {
-    background-color: #f2f2f2; /* Couleur de fond de la première ligne */
+    background-color: #dedede; /* Couleur de fond de la première ligne */
     font-weight: bold; /* Texte en gras dans la première ligne */
     color: black; /* Couleur du texte */
     font-family: Arial; /* Police du texte */
+}
+
+
+
+#tableArticle {
+    width: 50%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#tableArticle th, #tableArticle td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#tableArticle th {
+    background-color: #f2f2f2;
+}
+
+#tableArticle tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+#tableArticle tr:hover {
+    background-color: #c7e4ff;
+    cursor: pointer;
 }

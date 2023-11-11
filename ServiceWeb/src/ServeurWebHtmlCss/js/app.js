@@ -40,8 +40,16 @@ function miseAJourTable()
     xhr.open("GET","http://localhost:8080/api/tasks",true);
     xhr.responseType = "json";
     xhr.send();
+
 }
 
+var rows = document.querySelectorAll("#tableArticle tr");
+
+rows.forEach(function(row) {
+    row.addEventListener("click", function() {
+        alert("Vous avez cliqué sur la ligne : " + row.innerText);
+    });
+});
 
 function ajouteLigne(id,intitule, prix, stock)
 {
