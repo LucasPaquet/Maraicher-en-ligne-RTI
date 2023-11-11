@@ -13,6 +13,8 @@ public class Main
             serveur = HttpServer.create(new InetSocketAddress(8080),0);
             serveur.createContext("/",new HandlerHtml());
             serveur.createContext("/css",new HandlerCss());
+            serveur.createContext("/js", new HandlerJs());
+            serveur.createContext("/api/tasks", new MaraicherAPI());
             /*
             serveur.createContext("/images",new HandlerImages());
             serveur.createContext("/pdfs",new HandlerPdfs());

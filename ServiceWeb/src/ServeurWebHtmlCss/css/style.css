@@ -9,17 +9,17 @@ h1, h2 {
     text-align: center;
     font-family: "Calibri";
 }
-#maTable {
+#tableArticle {
     border-collapse: collapse; /* Fusionner les bordures adjacentes */
     border: 3px solid black; /* Bordure du tableau */
 }
-#maTable td {
+#tableArticle td {
     border: 1px solid black; /* Bordure des cellules */
     padding: 8px; /* Espacement interne autour du contenu des
 cellules */
 }
 /* Appliquer un style différent à la première ligne */
-#maTable tr:first-child {
+#tableArticle tr:first-child {
     background-color: #f2f2f2; /* Couleur de fond de la première ligne */
     font-weight: bold; /* Texte en gras dans la première ligne */
     color: black; /* Couleur du texte */
