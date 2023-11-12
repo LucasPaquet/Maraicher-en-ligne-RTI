@@ -2,10 +2,10 @@
     miseAJourTable(); // s'execute au cahrgement du script
 })();
 
-document.getElementById('add').addEventListener("click",function(e) {
+document.getElementById('add').addEventListener("click",function() {
     miseAJourTable()
     /*
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()
     {
 
@@ -13,7 +13,7 @@ document.getElementById('add').addEventListener("click",function(e) {
     xhr.open("POST","http://localhost:8080/api/tasks",true);
     xhr.responseType = "text";
     xhr.setRequestHeader("Content-type","text/plain");
-    var body = "ca marche";
+    let body = "ca marche";
     xhr.send(body);
     document.getElementById('description').value = "";
     document.getElementById('id').value = "";
@@ -22,30 +22,30 @@ document.getElementById('add').addEventListener("click",function(e) {
 
 });
 
-document.getElementById('update').addEventListener("click",function(e) {
-    var xhr = new XMLHttpRequest();
+document.getElementById('update').addEventListener("click",function() {
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()
     {
         console.log(this);
-        if (this.readyState == 4 && this.status == 200)
+        if (this.readyState === 4 && this.status === 200)
         {
             console.log(this.response);
             miseAJourTable();
 
-            var textLog = document.getElementById("textLog");
+            let textLog = document.getElementById("textLog");
             textLog.innerHTML = this.responseText;
         }
-        else if (this.readyState == 4) {
+        else if (this.readyState === 4) {
             alert("Une erreur est survenue...");
         }
     };
-    var url = "http://127.0.0.1:8080/api/tasks?id=" + document.getElementById('idInput').value;
+    let url = "http://127.0.0.1:8080/api/tasks?id=" + document.getElementById('idInput').value;
     xhr.open("PUT",url,true);
 
     xhr.responseType = "text";
     xhr.setRequestHeader("Content-type","text/plain");
 
-    var body = document.getElementById('prixInput').value;
+    let body = document.getElementById('prixInput').value;
     body += "&" + document.getElementById('stockInput').value;
 
     xhr.send(body);
@@ -60,20 +60,20 @@ document.getElementById('update').addEventListener("click",function(e) {
 
 function miseAJourTable()
 {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()
     {
         console.log(this);
-        if (this.readyState == 4 && this.status == 200)
+        if (this.readyState === 4 && this.status === 200)
         {
             console.log(this.response);
-            articles = this.response;
+            let articles = this.response;
             videTable();
             articles.forEach(function(article) {
                 ajouteLigne(article.id,article.intitule, article.prix, article.stock);
             })
         }
-        else if (this.readyState == 4) {
+        else if (this.readyState === 4) {
             alert("Une erreur est survenue...");
         }
     };
@@ -85,19 +85,19 @@ function miseAJourTable()
 
 function ajouteLigne(id,intitule, prix, stock)
 {
-    var maTable = document.getElementById("tableArticle");
+    let maTable = document.getElementById("tableArticle");
 
     // Créer une nouvelle ligne
-    var nouvelleLigne = document.createElement("tr");
+    let nouvelleLigne = document.createElement("tr");
 
     // Créer des cellules
-    celluleId = document.createElement("td");
+    let celluleId = document.createElement("td");
     celluleId.textContent = id;
-    celluleIntitule = document.createElement("td");
+    let celluleIntitule = document.createElement("td");
     celluleIntitule.textContent = intitule;
-    cellulePrix = document.createElement("td");
+    let cellulePrix = document.createElement("td");
     cellulePrix.textContent = prix;
-    celluleStock = document.createElement("td");
+    let celluleStock = document.createElement("td");
     celluleStock.textContent = stock;
 
     // Ajouter les cellules à la ligne
@@ -113,7 +113,7 @@ function ajouteLigne(id,intitule, prix, stock)
 }
 
 function videTable() {
-    var maTable = document.getElementById("tableArticle");
+    let maTable = document.getElementById("tableArticle");
     while (maTable.rows.length > 1) {
         maTable.deleteRow(-1); // supprimer dernière ligne
     }
@@ -122,13 +122,13 @@ function videTable() {
 function attacherGestionnaireLigne(ligne) {
     ligne.addEventListener("click", function() {
         // Récupérer les cellules de la ligne cliquée
-        var cells = ligne.cells;
+        let cells = ligne.cells;
 
         // Récupérer les valeurs des cellules
-        var id = cells[0].textContent;
-        var intitule = cells[1].textContent;
-        var prix = cells[2].textContent;
-        var stock = cells[3].textContent;
+        let id = cells[0].textContent;
+        let intitule = cells[1].textContent;
+        let prix = cells[2].textContent;
+        let stock = cells[3].textContent;
 
         // Mettre à jour les champs d'entrée avec les valeurs
         document.getElementById("idInput").value = id;

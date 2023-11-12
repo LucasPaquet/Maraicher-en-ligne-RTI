@@ -17,10 +17,10 @@ import java.util.Map;
 
 public class MaraicherAPI implements HttpHandler{
     private static List<Article> articles = new ArrayList<>();
-    private DatabaseConnection dbConnect;
-    private JdbcAPI db;
+    private final JdbcAPI db;
 
     public MaraicherAPI() {
+        DatabaseConnection dbConnect;
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
                     "192.168.0.5",

@@ -10,7 +10,7 @@ h1, h2 {
 }
 .mainTitle{
     text-align: center;
-    font-family: "Calibri";
+    font-family: "Calibri", serif;
 }
 
 /* Appliquer un style différent à la première ligne */
@@ -18,7 +18,7 @@ h1, h2 {
     background-color: #dedede; /* Couleur de fond de la première ligne */
     font-weight: bold; /* Texte en gras dans la première ligne */
     color: black; /* Couleur du texte */
-    font-family: Arial; /* Police du texte */
+    font-family: Arial, serif; /* Police du texte */
 }
 
 

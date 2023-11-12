@@ -7,7 +7,7 @@ public class Main
 {
     public static void main(String[] args)
     {
-        HttpServer serveur = null;
+        HttpServer serveur;
         try
         {
             serveur = HttpServer.create(new InetSocketAddress(8080),0);
