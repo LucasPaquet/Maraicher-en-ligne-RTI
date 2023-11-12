@@ -17,13 +17,13 @@ import java.util.Map;
 
 public class MaraicherAPI implements HttpHandler{
     private static List<Article> articles = new ArrayList<>();
-    DatabaseConnection dbConnect;
-    JdbcAPI db;
+    private DatabaseConnection dbConnect;
+    private JdbcAPI db;
 
     public MaraicherAPI() {
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.0.18",
+                    "192.168.0.5",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -37,8 +37,14 @@ public class MaraicherAPI implements HttpHandler{
     @Override
     public void handle(HttpExchange exchange) throws IOException
     {
+        // CORS (Cross-Origin Resource Sharing), autoriser les verbe
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, PUT");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "ContentType");
+
         articles = db.getArticles();
         String requestMethod = exchange.getRequestMethod();
+        System.out.println("DEBUG : " + requestMethod);
         if (requestMethod.equalsIgnoreCase("GET"))
         {
             System.out.println("--- Requête GET reçue (obtenir la liste) ---");
@@ -46,46 +52,34 @@ public class MaraicherAPI implements HttpHandler{
             String response = convertTasksToJson();
             sendResponse(exchange, 200, response);
         }
-        else if (requestMethod.equalsIgnoreCase("POST"))
-        {
-            System.out.println("--- Requête POST reçue (ajout) ---");
-            // Ajouter une nouvelle tâche
-            //String requestBody = readRequestBody(exchange);
-            // System.out.println("requestNody = " + requestBody);
-            // addTask(requestBody);
-            sendResponse(exchange, 201, "Tache ajoutee avec succes");
-        }
         else if (requestMethod.equalsIgnoreCase("PUT"))
         {
             System.out.println("--- Requête PUT reçue (mise a jour) ---");
             // Mettre à jour une tâche existante
-            Map<String, String> queryParams =
-                    parseQueryParams(exchange.getRequestURI().getQuery());
+            Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+
             if (queryParams.containsKey("id"))
             {
                 int taskId = Integer.parseInt(queryParams.get("id"));
                 System.out.println("Mise a jour tache id=" + taskId);
+
                 String requestBody = readRequestBody(exchange);
-                System.out.println("requestNody = " + requestBody);
-                // updateTask(taskId, requestBody);
+                System.out.println("requestBody = " + requestBody);
+                String[] values = requestBody.split("&"); // on parse sur le '&' car dans js on ajoute un '&' entre les deux valeur
+
+                if (!updateTask(taskId, values[0], values[1])){
+                    sendResponse(exchange, 500, "Erreur interne au serveur");
+                    return;
+                }
+
+
                 sendResponse(exchange, 200, "Tache mise a jour avec succes");
             }
             else sendResponse(exchange, 400, "ID de tache manquant dans les parametres");
         }
-        else if (requestMethod.equalsIgnoreCase("DELETE"))
-        {
-            System.out.println("--- Requête DELETE reçue (suppression) ---");
-            // Supprimer une tâche
-            Map<String, String> queryParams =
-                    parseQueryParams(exchange.getRequestURI().getQuery());
-            if (queryParams.containsKey("id"))
-            {
-                int taskId = Integer.parseInt(queryParams.get("id"));
-                System.out.println("Suppression tache id=" + taskId);
-                deleteTask(taskId);
-                sendResponse(exchange, 200, "Tache supprimee avec succes");
-            }
-            else sendResponse(exchange, 400, "ID de tache manquant dans les parametres");
+        else if (requestMethod.equalsIgnoreCase("OPTIONS")) { // les browser envoie d'abord une requette options pour savoir ce qui est autorisé ou pas donc oblige de handle
+            // Répondre aux requêtes OPTIONS pour permettre CORS
+            exchange.sendResponseHeaders(200, -1);
         }
         else sendResponse(exchange, 405, "Methode non autorisee");
     }
@@ -146,23 +140,13 @@ public class MaraicherAPI implements HttpHandler{
         json.append("]");
         return json.toString();
     }
-    private static void addTask(Article task)
-    {
-        articles.add(task);
-    }
-    private static void updateTask(int taskId, Article updatedTask)
+    private boolean updateTask(int taskId, String prix, String stock)
     {
         if (taskId >= 1 && taskId <= articles.size())
         {
-            articles.set(taskId - 1, updatedTask);
+            return db.updateArticle(taskId, prix, stock);
         }
-    }
-    private static void deleteTask(int taskId)
-    {
-        if (taskId >= 1 && taskId <= articles.size())
-        {
-            articles.remove(taskId - 1);
-        }
+        return false;
     }
 
 }

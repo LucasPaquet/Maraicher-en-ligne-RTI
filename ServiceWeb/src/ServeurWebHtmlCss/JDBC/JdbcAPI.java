@@ -46,10 +46,10 @@ public class JdbcAPI {
         return articles;
     }
 
-    public boolean payFacture(int idFacture) {
+    public boolean updateArticle(int idArticle, String prix, String stock) {
 
         try {
-            int result = dbConnect.executeUpdate("update factures set paye = true where id = " + idFacture + ";");
+            int result = dbConnect.executeUpdate("update articles set prix = "+ prix +", stock = " + stock + " where id = " + idArticle + ";");
             return result == 1;
 
         } catch (SQLException e) {
