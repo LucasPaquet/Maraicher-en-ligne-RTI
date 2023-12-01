@@ -47,10 +47,9 @@ public class VESPAP implements Protocole
     private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGIN requete, Socket socket)
     {
         if (db.checkLogin(requete.getLogin(), requete.getPassword()) == 0){
-            String ipPortClient = socket.getInetAddress().getHostAddress() + "/"
-                    + socket.getPort();
-            System.out.println("[SERVEUR] " + requete.getLogin() + " correctement loggé de " +
-                    ipPortClient);
+            String ipPortClient = socket.getInetAddress().getHostAddress() + "/" + socket.getPort();
+
+            System.out.println("[SERVEUR] " + requete.getLogin() + " correctement loggé de " + ipPortClient);
             clientsConnectes.put(requete.getLogin(),socket);
             return new ReponseLOGIN(true);
         }

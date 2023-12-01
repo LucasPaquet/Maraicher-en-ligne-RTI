@@ -48,7 +48,7 @@ public class ClientVESPAP {
                 this.login = log;
                 return true;
             } else {
-                System.out.println("[CLIENT] Je suis PAS connecté :(");
+                System.out.println("[CLIENT] Je suis PAS connecté");
                 return false;
             }
         } catch (IOException | ClassNotFoundException ex) {
@@ -76,7 +76,6 @@ public class ClientVESPAP {
 
             // Creation et envoie de la requete
             RequeteGetFactures requete = new RequeteGetFactures(idClient);
-            System.out.println("envoie requete");
             oos.writeObject(requete);
 
             // Réception réponse

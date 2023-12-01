@@ -445,7 +445,7 @@ public class WindowClient extends JFrame {
             port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
             ip = properties.getProperty("IP_PAIEMENT");
 
-            System.out.println(port + " "+ ip);
+            System.out.println(port + " " + ip);
         } catch (IOException e) {
             e.printStackTrace();
         }

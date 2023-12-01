@@ -15,8 +15,9 @@ public class Main
             serveur.createContext("/css",new HandlerCss());
             serveur.createContext("/js", new HandlerJs());
             serveur.createContext("/api/tasks", new MaraicherAPI());
-            /*
             serveur.createContext("/images",new HandlerImages());
+            /*
+
             serveur.createContext("/pdfs",new HandlerPdfs());
              */
             System.out.println("Demarrage du serveur HTTP...");

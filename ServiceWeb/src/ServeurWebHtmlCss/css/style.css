@@ -1,6 +1,5 @@
 html {
-    background: lightyellow;
-    padding: 15px;
+    padding: 10px;
 }
 body {
     font-family: Arial, sans-serif;
@@ -13,6 +12,28 @@ h1, h2 {
     font-family: "Calibri", serif;
 }
 
+#conteneur {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5%;
+}
+
+
+#divForm {
+    display: flex; /* Utiliser Flexbox pour les éléments à l'intérieur de divForm */
+    flex-direction: column; /* Disposer les éléments verticalement */
+    background: lightblue;
+    padding: 10px;
+}
+
+#divForm > *:not(#imgProduit) {
+    margin-bottom: 10px; /* Espacement entre chaque élément */
+}
+
+
+
 /* Appliquer un style différent à la première ligne */
 #tableArticle tr:first-child {
     background-color: #dedede; /* Couleur de fond de la première ligne */
@@ -24,7 +45,7 @@ h1, h2 {
 
 
 #tableArticle {
-    width: 50%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }

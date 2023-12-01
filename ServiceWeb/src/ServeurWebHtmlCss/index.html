@@ -9,50 +9,57 @@
     <div>
         <h1 class="mainTitle">Gestion du stock du Maraîcher en ligne</h1>
     </div>
+    <div id="conteneur">
+        <div>
+            <h1 class="monTitre">Table exemple</h1>
 
-    <div>
-        <h1 class="monTitre">Table exemple</h1>
+            <table id="tableArticle">
+                <tr>
+                    <td>Id</td>
+                    <td>Article</td>
+                    <td>Prix à l'unité</td>
+                    <td>Quantité</td>
+                </tr>
+                <tr>
+                    <td>Wagner</td>
+                    <td>Jean-Marc</td>
+                    <td>27</td>
+                    <td>27</td>
+                </tr>
+                <tr>
+                    <td>Hiard</td>
+                    <td>Samuel</td>
+                    <td>76</td>
+                    <td>27</td>
+                </tr>
+            </table>
 
-        <table id="tableArticle">
-            <tr>
-                <td>Id</td>
-                <td>Article</td>
-                <td>Prix à l'unité</td>
-                <td>Quantité</td>
-            </tr>
-            <tr>
-                <td>Wagner</td>
-                <td>Jean-Marc</td>
-                <td>27</td>
-                <td>27</td>
-            </tr>
-            <tr>
-                <td>Hiard</td>
-                <td>Samuel</td>
-                <td>76</td>
-                <td>27</td>
-            </tr>
-        </table>
+            <button id="add">Ajouter</button>
+            <p style="color: blue; font-weight: bold; font-size: 15px; padding-left: 10px" id="textLog">...statut de la requête...</p>
+        </div>
 
-        <button id="add">Ajouter</button>
+
+        <div id="divForm">
+            <p><b>Éditer le produit</b></p>
+            <img id="imgProduit" src="images/missing.jpg">
+            <br>
+
+            <label for="idInput">ID : </label>
+            <input type="number" id="idInput" name="id" readonly>
+
+            <label for="intituleInput">Intitule : </label>
+            <input type="text" id="intituleInput" name="intitule" readonly>
+
+            <label for="prixInput">Prix : </label>
+            <input type="number" id="prixInput" name="prix">
+
+            <label for="stockInput">Stock : </label>
+            <input type="number" id="stockInput" name="stock">
+
+            <button id="update">Mettre à jour</button>
+        </div>
+
     </div>
-    <div>
-        <label for="idInput">ID : </label>
-        <input type="number" id="idInput" name="id" readonly>
-
-        <label for="intituleInput">Intitule : </label>
-        <input type="text" id="intituleInput" name="intitule" readonly>
-
-        <label for="prixInput">Prix : </label>
-        <input type="number" id="prixInput" name="prix">
-
-        <label for="stockInput">Stock : </label>
-        <input type="number" id="stockInput" name="stock">
-
-        <button id="update">Mettre à jour</button>
-    </div>
-
-    <p style="color: blue; font-weight: bold; font-size: 15px; padding-left: 10px" id="textLog">...statut de la requête...</p>
 
 
     <script src="js/app.js"></script>

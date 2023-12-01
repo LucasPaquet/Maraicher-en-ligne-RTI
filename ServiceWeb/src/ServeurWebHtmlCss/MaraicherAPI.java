@@ -23,7 +23,7 @@ public class MaraicherAPI implements HttpHandler{
         DatabaseConnection dbConnect;
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.0.5",
+                    "192.168.28.128",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -84,8 +84,7 @@ public class MaraicherAPI implements HttpHandler{
         else sendResponse(exchange, 405, "Methode non autorisee");
     }
 
-    private static void sendResponse(HttpExchange exchange, int statusCode, String
-            response) throws IOException
+    private static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException
     {
         System.out.println("Envoi de la réponse (" + statusCode + ") : --" + response
                 + "--");
@@ -134,7 +133,8 @@ public class MaraicherAPI implements HttpHandler{
                     .append(", \"intitule\":\"").append(articles.get(i).getNomArticle())
                     .append("\", \"prix\": ").append(articles.get(i).getPrix())
                     .append(", \"stock\":").append(articles.get(i).getQuantite())
-                    .append("}");
+                    .append(", \"image\":\"").append(articles.get(i).getImage())
+                    .append("\"}");
             if (i < articles.size() - 1) json.append(",");
         }
         json.append("]");

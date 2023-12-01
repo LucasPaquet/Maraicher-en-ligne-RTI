@@ -70,7 +70,7 @@ function miseAJourTable()
             let articles = this.response;
             videTable();
             articles.forEach(function(article) {
-                ajouteLigne(article.id,article.intitule, article.prix, article.stock);
+                ajouteLigne(article.id,article.intitule, article.prix, article.stock, article.image);
             })
         }
         else if (this.readyState === 4) {
@@ -83,7 +83,7 @@ function miseAJourTable()
 
 }
 
-function ajouteLigne(id,intitule, prix, stock)
+function ajouteLigne(id,intitule, prix, stock, image)
 {
     let maTable = document.getElementById("tableArticle");
 
@@ -106,7 +106,7 @@ function ajouteLigne(id,intitule, prix, stock)
     nouvelleLigne.appendChild(cellulePrix);
     nouvelleLigne.appendChild(celluleStock);
 
-    attacherGestionnaireLigne(nouvelleLigne); // pour ajouter au gestionnaire d'event
+    attacherGestionnaireLigne(nouvelleLigne, image); // pour ajouter au gestionnaire d'event
 
     // Ajouter la nouvelle ligne au tableau
     maTable.appendChild(nouvelleLigne);
@@ -119,7 +119,7 @@ function videTable() {
     }
 }
 
-function attacherGestionnaireLigne(ligne) {
+function attacherGestionnaireLigne(ligne, image) {
     ligne.addEventListener("click", function() {
         // Récupérer les cellules de la ligne cliquée
         let cells = ligne.cells;
@@ -135,5 +135,7 @@ function attacherGestionnaireLigne(ligne) {
         document.getElementById("intituleInput").value = intitule;
         document.getElementById("prixInput").value = prix;
         document.getElementById("stockInput").value = stock;
+
+        document.getElementById("imgProduit").src = "images/" + image;
     });
 }
