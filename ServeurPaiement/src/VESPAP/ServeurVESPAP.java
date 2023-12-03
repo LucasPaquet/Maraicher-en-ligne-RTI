@@ -7,11 +7,16 @@ import Tcp.ThreadServeurPool;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class ServeurVESPAP {
     ThreadServeur threadServeur;
+    ThreadServeur threadServeurSecure;
     DatabaseConnection dbConnect;
     private int port;
     private int taillePool;
@@ -36,11 +41,14 @@ public class ServeurVESPAP {
         try
         {
             Protocole protocole = new VESPAP(dbConnect);
+            Protocole protocoleSecure = new VESPAPS(dbConnect);
 
-            System.out.println("[SERVER] Lancement du pool");
+            System.out.println("[SERVER] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
+            threadServeurSecure = new ThreadServeurPool(50001, protocoleSecure, taillePool);
 
             threadServeur.start();
+            threadServeurSecure.start();
         }
         catch (NumberFormatException ex)
         {
@@ -49,6 +57,14 @@ public class ServeurVESPAP {
         catch (IOException ex)
         {
             System.out.println("ERREUR IOException : " + ex);
+        } catch (UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 

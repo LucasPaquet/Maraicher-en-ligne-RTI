@@ -1,6 +1,6 @@
 package GUI;
 
-import VESPAP.ClientVESPAP;
+import VESPAP.ClientVESPAPS;
 import VESPAP.Facture;
 import VESPAP.Vente;
 
@@ -12,6 +12,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,17 +33,27 @@ public class MainWindow extends JFrame{
     private JTextField tfClient;
     private JPanel JpaneSearchClient;
     private JTable tableVente;
-    private ClientVESPAP cl;
+    private ClientVESPAPS cl;
     private String ip;
     private int port;
-
 
     public MainWindow() {
 
         initConfig();
 
         // Connexion serveur
-        cl = new ClientVESPAP(ip, port);
+        try {
+            cl = new ClientVESPAPS(ip, port);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // pour qu'on ne puisse que selectionne une seule ligne a la fois
         tableFacture.setDefaultEditor(Object.class, null);
@@ -73,7 +86,7 @@ public class MainWindow extends JFrame{
         btnLogin.addActionListener(actionEvent -> VESPAPLogin());
 
         btnLogout.addActionListener(actionEvent -> {
-            cl.VESPAP_Logout();
+            // cl.VESPAPS_Logout();
             LogoutOK();
         });
         btnSearch.addActionListener(actionEvent -> VESPAPGetFactures());
@@ -103,7 +116,7 @@ public class MainWindow extends JFrame{
         btnLogin.setEnabled(false);
         btnLogout.setEnabled(true);
 
-        // Partie Facture
+        // Partie VESPAPS.Facture
         btnBuy.setEnabled(true);
         btnSearch.setEnabled(true);
         tfClient.setEnabled(true);
@@ -118,7 +131,7 @@ public class MainWindow extends JFrame{
         tfNom.setText("");
         tfMdp.setText("");
 
-        // Partie Facture
+        // Partie VESPAPS.Facture
         btnBuy.setEnabled(false);
         btnSearch.setEnabled(false);
         tfClient.setEnabled(false);
@@ -144,7 +157,17 @@ public class MainWindow extends JFrame{
 
         if (cl.IsOosNull()){
             JOptionPane.showMessageDialog(null, "Vous n'êtes pas connecté au serveur", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
-            cl = new ClientVESPAP(ip, port); // on retente de se connecte au serveur
+            try {
+                cl = new ClientVESPAPS(ip, port); // on retente de se connecte au serveur
+            } catch (CertificateException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (KeyStoreException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         if(tfNom.getText().isEmpty() || tfMdp.getText().isEmpty()){
@@ -152,8 +175,7 @@ public class MainWindow extends JFrame{
             return;
         }
 
-        if (cl.VESPAP_Login(tfNom.getText(), tfMdp.getText())){
-
+        if (cl.VESPAPS_Login(tfNom.getText(), tfMdp.getText())){
             JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
             LoginOK();
         }
@@ -163,17 +185,17 @@ public class MainWindow extends JFrame{
     }
 
     private void VESPAPGetFactures(){
-        List<Facture> factures;
+        List<Facture> factures = null;
 
         try { // si on arrive pas à convertir le chalos quantite en int
 
             int idClient = Integer.parseInt(tfClient.getText());
 
             if (idClient > 0){ // pour empecher les nombres negatif
-                factures = cl.VESPAP_GetFactures(idClient);
+                // factures = cl.VESPAP_GetFactures(idClient);
 
                 if (factures.isEmpty()){ // si il n'y a pas de factures pour le client
-                    JOptionPane.showMessageDialog(null, "Il n'y a pas de facture pour ce client", "Facture non trouvé", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Il n'y a pas de facture pour ce client", "VESPAPS.Facture non trouvé", JOptionPane.INFORMATION_MESSAGE);
                 }
 
                 System.out.println(factures);
@@ -219,7 +241,7 @@ public class MainWindow extends JFrame{
         }
 
 
-
+        /*
         if (cl.VESPAP_PayFactures(
                 Integer.parseInt(tableFacture.getValueAt(tableFacture.getSelectedRow(), 0).toString()),
                 dialog.getNom(),
@@ -229,10 +251,12 @@ public class MainWindow extends JFrame{
         }
         else
             JOptionPane.showMessageDialog(null, "La facture n'a pas été payé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
+
+         */
     }
 
     private void VESPAP_GetVente(){
-        List<Vente> ventes;
+        List<Vente> ventes = null;
         // Recuperation la ligne sélectionnée
         int selectedRow = tableFacture.getSelectedRow();
 
@@ -240,7 +264,7 @@ public class MainWindow extends JFrame{
         {
             Object data = tableFacture.getValueAt(selectedRow, 0);
 
-            ventes = cl.VESPAP_GetVente(Integer.parseInt(data.toString()));
+            // ventes = cl.VESPAP_GetVente(Integer.parseInt(data.toString()));
 
             DefaultTableModel model = new DefaultTableModel();
             model.setColumnIdentifiers(new String[]{"ID Article", "Quantité"});
