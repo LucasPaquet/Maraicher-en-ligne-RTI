@@ -259,7 +259,7 @@ public class MainWindow extends JFrame{
         {
             Object data = tableFacture.getValueAt(selectedRow, 0);
 
-            // ventes = cl.VESPAP_GetVente(Integer.parseInt(data.toString()));
+            ventes = cl.VESPAP_GetVente(Integer.parseInt(data.toString()));
 
             DefaultTableModel model = new DefaultTableModel();
             model.setColumnIdentifiers(new String[]{"ID Article", "Quantité"});

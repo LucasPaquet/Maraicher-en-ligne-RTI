@@ -157,8 +157,6 @@ public class ClientVESPAPS {
     public List<Facture> VESPAPS_GetFactures(int idClient){
 
         try {
-            VESPAPS_Handshake();
-
             // Creation et envoie de la requete
             RequeteGetFacturesSignature requete = new RequeteGetFacturesSignature(idClient);
             requete.setSignature(SignFacture(requete.getIdClient()));
@@ -178,32 +176,14 @@ public class ClientVESPAPS {
             return reponse.getFactures();
 
 
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (Exception ex) {
             System.out.println("ERREUR 2" + ex);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
         }
         return null;
     }
 
     public boolean VESPAPS_PayFacture(int numFacture, String nom, String numVisa){
         try {
-            VESPAPS_Handshake();
-
             // Creation et envoie de la requete
             RequetePayFactures requete = new RequetePayFactures(numFacture, nom, numVisa);
 
@@ -226,26 +206,36 @@ public class ClientVESPAPS {
             else
                 return false;
 
-        } catch (IOException | ClassNotFoundException ex) {
-            System.out.println("ERREUR 2" + ex);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("ERREUR : " + ex);
         }
         return false;
+    }
+
+    public List<Vente> VESPAP_GetVente(int idFacture) {
+        try {
+            // Creation et envoie de la requete
+            RequeteGetVente requete = new RequeteGetVente(idFacture);
+
+            // Cryptage de la requete
+            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
+
+            // Envoie de la requete crypte
+            oos.writeObject(requeteCrypte);
+
+            // Réception reponse
+            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+
+            // Decryptage de la reponse
+            ReponseGetVente reponse = (ReponseGetVente) TraiteReponseCrypte(reponseCrypte);
+
+            return reponse.getVente();
+
+
+        } catch (Exception ex) {
+            System.out.println("ERREUR : " + ex);
+        }
+        return null;
     }
 
     // ***************************** METHOD DECRYPT AND CRYPT ********************************
@@ -391,4 +381,6 @@ public class ClientVESPAPS {
     public boolean IsOosNull() {
         return oos == null;
     }
+
+
 }
