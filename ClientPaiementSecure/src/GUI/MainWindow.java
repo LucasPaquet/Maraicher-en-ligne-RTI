@@ -237,9 +237,7 @@ public class MainWindow extends JFrame{
             return;
         }
 
-
-        /*
-        if (cl.VESPAP_PayFactures(
+        if (cl.VESPAPS_PayFacture(
                 Integer.parseInt(tableFacture.getValueAt(tableFacture.getSelectedRow(), 0).toString()),
                 dialog.getNom(),
                 dialog.getNumVisa()))
@@ -249,7 +247,7 @@ public class MainWindow extends JFrame{
         else
             JOptionPane.showMessageDialog(null, "La facture n'a pas été payé", "Erreur de Payement", JOptionPane.ERROR_MESSAGE);
 
-         */
+
     }
 
     private void VESPAP_GetVente(){

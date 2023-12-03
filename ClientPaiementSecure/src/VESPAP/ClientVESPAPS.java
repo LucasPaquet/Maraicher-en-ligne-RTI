@@ -2,9 +2,7 @@ package VESPAP;
 
 import Tcp.Interface.Reponse;
 import Tcp.Interface.Requete;
-import VESPAP.Reponse.ReponseCrypte;
-import VESPAP.Reponse.ReponseGetFactures;
-import VESPAP.Reponse.ReponseLOGIN;
+import VESPAP.Reponse.*;
 import VESPAP.Requete.*;
 import Crypto.MyCrypto;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -45,6 +43,8 @@ public class ClientVESPAPS {
         privateKey = RecupereClePriveeClient();
     }
 
+    // *********************** METHODE VESPAPS **********************************
+
     public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, KeyStoreException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         // Génération d'une clé de session
         Security.addProvider(new BouncyCastleProvider());
@@ -77,7 +77,6 @@ public class ClientVESPAPS {
     }
 
     public boolean VESPAPS_Login(String log, String mdp){
-
         try {
             VESPAPS_Handshake();
 
@@ -100,6 +99,7 @@ public class ClientVESPAPS {
             if (reponseCrypte == null)
                 System.out.println("je suis null");
 
+            // Decrypte la Reponse
             ReponseLOGIN reponse = (ReponseLOGIN) TraiteReponseCrypte(reponseCrypte);
 
 
@@ -200,6 +200,55 @@ public class ClientVESPAPS {
         return null;
     }
 
+    public boolean VESPAPS_PayFacture(int numFacture, String nom, String numVisa){
+        try {
+            VESPAPS_Handshake();
+
+            // Creation et envoie de la requete
+            RequetePayFactures requete = new RequetePayFactures(numFacture, nom, numVisa);
+
+            // Cryptage de la requete
+            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
+
+            // Envoie de la requete crypte
+            oos.writeObject(requeteCrypte);
+
+            // Réception réponse
+            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+            if (reponseCrypte == null)
+                System.out.println("je suis null");
+
+            // Decrypte la Reponse
+            ReponsePayFacturesHMAC reponse = (ReponsePayFacturesHMAC) TraiteReponseCrypte(reponseCrypte);
+
+            if (VerifyHmac(reponse))
+                return reponse.isPaid();
+            else
+                return false;
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        } catch (NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalBlockSizeException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (BadPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    // ***************************** METHOD DECRYPT AND CRYPT ********************************
     private Reponse TraiteReponseCrypte(ReponseCrypte reponse)
     {
         try {
@@ -249,6 +298,7 @@ public class ClientVESPAPS {
         }
     }
 
+    // *************************** METHODE D'AUTH et INTEGRITE *******************************
     private byte[] MakeDigest(RequeteLOGINDigest requete, String mdp) {
 
 
@@ -298,6 +348,28 @@ public class ClientVESPAPS {
             throw new RuntimeException(e);
         }
     }
+    private boolean VerifyHmac(ReponsePayFacturesHMAC reponse) {
+        try {
+            // Construction du HMAC local
+            Mac hm = Mac.getInstance("HMAC-MD5","BC");
+            hm.init(keySession);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeBoolean(reponse.isPaid());
+            hm.update(baos.toByteArray());
+
+            byte[] hmacLocal = hm.doFinal();
+
+            // Comparaison HMAC reçu et HMAC local
+            return MessageDigest.isEqual(reponse.getHmac(),hmacLocal);
+        }catch (Exception e){
+            System.out.println("Erreur : " + e);
+            return false;
+        }
+    }
+
+    // *************************** METHODE RECUPERATION CLE ******************************************
 
     public static PublicKey RecupereClePubliqueServeur() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
         // Récupération de la clé publique de Jean-Marc dans le keystore de Christophe

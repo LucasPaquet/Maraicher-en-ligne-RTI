@@ -9,17 +9,13 @@ import VESPAP.Reponse.*;
 import VESPAP.Requete.*;
 import crypto.MyCrypto;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -134,14 +130,18 @@ public class VESPAPS implements Protocole {
         return null;
     }
 
-    private synchronized ReponsePayFactures TraiteRequetePayFactures(RequetePayFactures requete)
+    private synchronized ReponsePayFacturesHMAC TraiteRequetePayFactures(RequetePayFactures requete)
     {
         boolean result = false;
         if (isValidCreditCardNumber(requete.getNumVisa())){ // si la carte VISA est valide
             result = db.payFacture(requete.getIdFacture());
         }
         System.out.println("[SERVEUR] Reponse : " + result + "\n");
-        return new ReponsePayFactures(result);
+
+        ReponsePayFacturesHMAC res = new ReponsePayFacturesHMAC(result);
+        res.setHmac(GenerateHmac(res));
+
+        return res;
     }
 
     private synchronized ReponseGetVente TraiteRequeteGetVente(RequeteGetVente requete)
@@ -248,7 +248,7 @@ public class VESPAPS implements Protocole {
         }
         return (sum % 10 == 0);
     }
-
+    // *************************** METHODE RECUPERATION CLE ******************************************
     public static PrivateKey RecupereClePriveeServeur() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
         // Récupération de la clé privée de Jean-Marc dans le keystore de Jean-Marc
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -267,6 +267,8 @@ public class VESPAPS implements Protocole {
         PublicKey cle = certif.getPublicKey();
         return cle;
     }
+
+    // *************************** METHODE D'AUTH et INTEGRITE *******************************
 
     public boolean VerifySignature(RequeteGetFacturesSignature requete)
     {
@@ -293,5 +295,23 @@ public class VESPAPS implements Protocole {
         } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
         }
+    }
+    private byte[] GenerateHmac(ReponsePayFacturesHMAC requete){
+        try {
+            // Construction du HMAC
+            Mac hm = Mac.getInstance("HMAC-MD5","BC");
+            hm.init(keySession);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeBoolean(requete.isPaid());
+            hm.update(baos.toByteArray());
+
+            return hm.doFinal();
+        }
+        catch (Exception e){
+            System.out.println("Erreur :" + e);
+        }
+        return null;
     }
 }
