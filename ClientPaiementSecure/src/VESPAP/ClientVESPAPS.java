@@ -3,10 +3,9 @@ package VESPAP;
 import Tcp.Interface.Reponse;
 import Tcp.Interface.Requete;
 import VESPAP.Reponse.ReponseCrypte;
+import VESPAP.Reponse.ReponseGetFactures;
 import VESPAP.Reponse.ReponseLOGIN;
-import VESPAP.Requete.RequeteCrypte;
-import VESPAP.Requete.RequeteHandshake;
-import VESPAP.Requete.RequeteLOGIN;
+import VESPAP.Requete.*;
 import Crypto.MyCrypto;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -16,6 +15,8 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.List;
 
 public class ClientVESPAPS {
     private Socket socket;
@@ -23,9 +24,10 @@ public class ClientVESPAPS {
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
     private final PublicKey publicKey;
+    private final PrivateKey privateKey;
     private SecretKey keySession;
 
-    public ClientVESPAPS(String ip, int port) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    public ClientVESPAPS(String ip, int port) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
         oos = null;
         ois = null;
 
@@ -40,6 +42,7 @@ public class ClientVESPAPS {
         }
 
         publicKey = RecupereClePubliqueServeur();
+        privateKey = RecupereClePriveeClient();
     }
 
     public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, KeyStoreException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
@@ -79,18 +82,15 @@ public class ClientVESPAPS {
             VESPAPS_Handshake();
 
             // Creation et envoie de la requete
-            RequeteLOGIN requete = new RequeteLOGIN(log, mdp);
+            RequeteLOGINDigest requete = new RequeteLOGINDigest(log);
 
-            // Convertion de la requete en byte[]
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream dos = new ObjectOutputStream(baos);
+            byte[] digest = MakeDigest(requete, mdp);
+            requete.setDigest(digest);
 
-            dos.writeObject(requete);
-            dos.flush();
-            byte[] requeteClaire = baos.toByteArray();
 
-            // Cryptage de la requete (qui est en byte[])
-            RequeteCrypte requeteCrypte = new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
+
+            // Cryptage de la requete
+            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
 
             // Envoie de la requete crypte
             oos.writeObject(requeteCrypte);
@@ -100,7 +100,7 @@ public class ClientVESPAPS {
             if (reponseCrypte == null)
                 System.out.println("je suis null");
 
-            ReponseLOGIN reponse = (ReponseLOGIN) TraiteRequeteCrypte(reponseCrypte);
+            ReponseLOGIN reponse = (ReponseLOGIN) TraiteReponseCrypte(reponseCrypte);
 
 
             if (reponse.isValide()) {
@@ -135,23 +135,168 @@ public class ClientVESPAPS {
         return false;
     }
 
-    private synchronized Reponse TraiteRequeteCrypte(ReponseCrypte requete)
+    public void VESPAPS_Logout(){
+        try {
+            // Creation et envoie de la requete
+            RequeteLOGOUT requete = new RequeteLOGOUT(login);
+
+            // Cryptage de la requete
+            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
+
+            // Envoie de la requete crypte
+            oos.writeObject(requeteCrypte);
+
+            // Réception réponse
+            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        }
+    }
+
+    public List<Facture> VESPAPS_GetFactures(int idClient){
+
+        try {
+            VESPAPS_Handshake();
+
+            // Creation et envoie de la requete
+            RequeteGetFacturesSignature requete = new RequeteGetFacturesSignature(idClient);
+            requete.setSignature(SignFacture(requete.getIdClient()));
+
+            // Cryptage de la requete
+            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
+
+            // Envoie de la requete crypte
+            oos.writeObject(requeteCrypte);
+
+            // Réception reponse
+            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+
+            // Decryptage de la reponse
+            ReponseGetFactures reponse = (ReponseGetFactures) TraiteReponseCrypte(reponseCrypte);
+
+            return reponse.getFactures();
+
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("ERREUR 2" + ex);
+        } catch (NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalBlockSizeException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (BadPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private Reponse TraiteReponseCrypte(ReponseCrypte reponse)
     {
         try {
             // Décryptage du message
             byte[] messageDecrypte;
-            messageDecrypte = MyCrypto.DecryptSymDES(keySession,requete.getData());
+            messageDecrypte = MyCrypto.DecryptSymDES(keySession,reponse.getData());
 
             // Récupération des données claires
             ByteArrayInputStream bais = new ByteArrayInputStream(messageDecrypte);
             ObjectInputStream dis = new ObjectInputStream(bais);
-            Reponse requeteDecrypt = (Reponse) dis.readObject();
-            return requeteDecrypt;
+            Reponse reponseDecrypt = (Reponse) dis.readObject();
+            return reponseDecrypt;
 
         }catch (Exception e){
             System.out.println("Erreur : " + e);
         }
         return null;
+    }
+    private RequeteCrypte ConvertToRequeteCrypte(Requete requete){
+        try {
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream dos = new ObjectOutputStream(baos);
+
+            dos.writeObject(requete);
+            dos.flush();
+            byte[] requeteClaire = baos.toByteArray();
+
+            // Cryptage de la requete (qui est en byte[])
+            RequeteCrypte requeteCrypte = new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
+
+            return requeteCrypte;
+        } catch (NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalBlockSizeException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (BadPaddingException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] MakeDigest(RequeteLOGINDigest requete, String mdp) {
+
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1","BC");
+
+            md.update(requete.getLogin().getBytes());
+            md.update(mdp.getBytes());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeLong(requete.getTemps());
+            dos.writeDouble(requete.getNbRandom());
+
+            md.update(baos.toByteArray());
+
+            return md.digest();
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] SignFacture(int idClient){
+        try{
+            // Construction de la signature
+            Signature s = Signature.getInstance("SHA1withRSA","BC");
+            s.initSign(privateKey);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(idClient);
+            s.update(baos.toByteArray());
+            return s.sign();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SignatureException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static PublicKey RecupereClePubliqueServeur() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
@@ -160,6 +305,14 @@ public class ClientVESPAPS {
         ks.load(new FileInputStream("client.jks"),"azerty".toCharArray());
         X509Certificate certif = (X509Certificate)ks.getCertificate("serveur");
         PublicKey cle = certif.getPublicKey();
+        return cle;
+    }
+
+    public static PrivateKey RecupereClePriveeClient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        // Récupération de la clé publique de Jean-Marc dans le keystore de Christophe
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream("client.jks"),"azerty".toCharArray());
+        PrivateKey cle = (PrivateKey) ks.getKey("client","azerty".toCharArray());
         return cle;
     }
 

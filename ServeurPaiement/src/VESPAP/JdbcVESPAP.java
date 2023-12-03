@@ -29,6 +29,18 @@ public class JdbcVESPAP {
         }
 
     }
+    public String getMdp(String login){
+        try {
+            ResultSet rs = dbConnect.executeQuery("select mdp from clients where nom LIKE '" + login + "';");
+            while (rs.next()) { // Si au moins une ligne correspond
+
+                return rs.getString("mdp");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return "";
+    }
 
     public List<Facture> getFacture(int idClient){
         List<Facture> factures = new ArrayList<>();

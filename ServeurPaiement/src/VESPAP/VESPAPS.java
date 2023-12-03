@@ -18,6 +18,8 @@ import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,12 +27,14 @@ public class VESPAPS implements Protocole {
     JdbcVESPAP db;
     private final HashMap<String, Socket> clientsConnectes;
     private final PrivateKey privateKey;
+    private final PublicKey publicKey;
     private SecretKey keySession;
 
     public VESPAPS(DatabaseConnection dbc) throws UnrecoverableKeyException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         clientsConnectes = new HashMap<>();
         db = new JdbcVESPAP(dbc);
         privateKey = RecupereClePriveeServeur();
+        publicKey = RecupereClePubliqueClient();
     }
 
     @Override
@@ -42,21 +46,18 @@ public class VESPAPS implements Protocole {
     public synchronized Reponse TraiteRequete(Requete requete, Socket socket) throws FinConnexionException
     {
         Reponse reponse = null;
-
-
+        System.out.println("[SERVEUR] Requete de type " + requete.getClass() + " recu");
 
         if (requete instanceof RequeteCrypte) {
             requete = TraiteRequeteCrypte((RequeteCrypte) requete);
-            System.out.println("[SERVEUR] Requete cr de type " + requete.getClass() + " recu");
         }
 
-        System.out.println("[SERVEUR] Requete de type " + requete.getClass() + " recu");
-        if (requete instanceof RequeteLOGIN)
-            reponse = TraiteRequeteLOGIN((RequeteLOGIN) requete, socket);
+        if (requete instanceof RequeteLOGINDigest)
+            reponse = TraiteRequeteLOGIN((RequeteLOGINDigest) requete, socket);
         if (requete instanceof RequeteLOGOUT)
             reponse = TraiteRequeteLOGOUT((RequeteLOGOUT) requete);
-        if (requete instanceof RequeteGetFactures)
-            reponse = TraiteRequeteGetFactures((RequeteGetFactures) requete);
+        if (requete instanceof RequeteGetFacturesSignature)
+            reponse = TraiteRequeteGetFactures((RequeteGetFacturesSignature) requete);
         if (requete instanceof RequetePayFactures)
             reponse = TraiteRequetePayFactures((RequetePayFactures) requete);
         if (requete instanceof RequeteGetVente)
@@ -75,19 +76,40 @@ public class VESPAPS implements Protocole {
 
 
 
-    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGIN requete, Socket socket)
+    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGINDigest requete, Socket socket)
     {
-        if (db.checkLogin(requete.getLogin(), requete.getPassword()) == 0){
-            String ipPortClient = socket.getInetAddress().getHostAddress() + "/" + socket.getPort();
+        try {
+            String mdp = db.getMdp(requete.getLogin());
+            System.out.println("MDP : " + mdp);
+            // Construction du digest local
+            MessageDigest md = MessageDigest.getInstance("SHA-1","BC");
 
-            System.out.println("[SERVEUR] " + requete.getLogin() + " correctement loggé de " + ipPortClient);
-            clientsConnectes.put(requete.getLogin(),socket);
-            return new ReponseLOGIN(true);
+            md.update(requete.getLogin().getBytes());
+            md.update(mdp.getBytes());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeLong(requete.getTemps());
+            dos.writeDouble(requete.getNbRandom());
+
+            md.update(baos.toByteArray());
+            byte[] digestLocal = md.digest();
+
+            if (MessageDigest.isEqual(requete.getPassword(), digestLocal)){
+                return new ReponseLOGIN(true);
+            }
+            else
+                return new ReponseLOGIN(false);
+
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
         }
 
-        // Si pas logge
-        System.out.println("[SERVEUR] " + requete.getLogin() + " --> erreur de login");
-        return new ReponseLOGIN(false);
     }
 
     private synchronized ReponseLogout TraiteRequeteLOGOUT(RequeteLOGOUT requete)//  throws FinConnexionException
@@ -98,15 +120,18 @@ public class VESPAPS implements Protocole {
         return new ReponseLogout(true);
     }
 
-    private synchronized ReponseGetFactures TraiteRequeteGetFactures(RequeteGetFactures requete)
+    private synchronized ReponseGetFactures TraiteRequeteGetFactures(RequeteGetFacturesSignature requete)
     {
         List<Facture> factures;
 
-        factures = db.getFacture(requete.getIdClient());
+        if (VerifySignature(requete)) {
+            factures = db.getFacture(requete.getIdClient());
 
-        System.out.println("[SERVEUR] Factures : " + factures + "\n");
+            System.out.println("[SERVEUR] Factures : " + factures + "\n");
 
-        return new ReponseGetFactures(factures);
+            return new ReponseGetFactures(factures);
+        }
+        return null;
     }
 
     private synchronized ReponsePayFactures TraiteRequetePayFactures(RequetePayFactures requete)
@@ -132,7 +157,6 @@ public class VESPAPS implements Protocole {
 
     private synchronized ReponseLogout TraiteRequeteHandshake(RequeteHandshake requete)
     {
-        System.out.println("HDNAD");
         try {
             byte[] cleSessionDecryptee;
 
@@ -154,7 +178,6 @@ public class VESPAPS implements Protocole {
     private synchronized Requete TraiteRequeteCrypte(RequeteCrypte requete)
     {
         try {
-            System.out.println("Je decrypte");
             // Décryptage du message
             byte[] messageDecrypte;
             messageDecrypte = MyCrypto.DecryptSymDES(keySession,requete.getData());
@@ -234,5 +257,41 @@ public class VESPAPS implements Protocole {
         System.out.println("*** Cle privee generee = " + cle);
 
         return cle;
+    }
+
+    public static PublicKey RecupereClePubliqueClient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+        // Récupération de la clé publique de Jean-Marc dans le keystore de Christophe
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream("serveur.jks"),"azerty".toCharArray());
+        X509Certificate certif = (X509Certificate)ks.getCertificate("client");
+        PublicKey cle = certif.getPublicKey();
+        return cle;
+    }
+
+    public boolean VerifySignature(RequeteGetFacturesSignature requete)
+    {
+        try {
+            // Construction de l'objet Signature
+            Signature s = Signature.getInstance("SHA1withRSA","BC");
+            s.initVerify(publicKey);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(requete.getIdClient());
+            s.update(baos.toByteArray());
+
+            // Vérification de la signature reçue
+            return s.verify(requete.getSignature());
+
+        } catch (SignatureException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

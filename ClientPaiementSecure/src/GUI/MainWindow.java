@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Properties;
@@ -52,6 +53,8 @@ public class MainWindow extends JFrame{
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        } catch (UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
         }
 
 
@@ -86,7 +89,7 @@ public class MainWindow extends JFrame{
         btnLogin.addActionListener(actionEvent -> VESPAPLogin());
 
         btnLogout.addActionListener(actionEvent -> {
-            // cl.VESPAPS_Logout();
+            cl.VESPAPS_Logout();
             LogoutOK();
         });
         btnSearch.addActionListener(actionEvent -> VESPAPGetFactures());
@@ -159,13 +162,7 @@ public class MainWindow extends JFrame{
             JOptionPane.showMessageDialog(null, "Vous n'êtes pas connecté au serveur", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
             try {
                 cl = new ClientVESPAPS(ip, port); // on retente de se connecte au serveur
-            } catch (CertificateException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (KeyStoreException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchAlgorithmException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -185,14 +182,14 @@ public class MainWindow extends JFrame{
     }
 
     private void VESPAPGetFactures(){
-        List<Facture> factures = null;
+        List<Facture> factures;
 
         try { // si on arrive pas à convertir le chalos quantite en int
 
             int idClient = Integer.parseInt(tfClient.getText());
 
             if (idClient > 0){ // pour empecher les nombres negatif
-                // factures = cl.VESPAP_GetFactures(idClient);
+                factures = cl.VESPAPS_GetFactures(idClient);
 
                 if (factures.isEmpty()){ // si il n'y a pas de factures pour le client
                     JOptionPane.showMessageDialog(null, "Il n'y a pas de facture pour ce client", "VESPAPS.Facture non trouvé", JOptionPane.INFORMATION_MESSAGE);
@@ -221,7 +218,7 @@ public class MainWindow extends JFrame{
             }
         }
         catch (Exception e){
-            JOptionPane.showMessageDialog(null, "Entrez un nombre valide", "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Entrez un nombre valide : " + e, "Erreur d'achat", JOptionPane.ERROR_MESSAGE);
         }
     }
     private void VESPAP_Payer(){
