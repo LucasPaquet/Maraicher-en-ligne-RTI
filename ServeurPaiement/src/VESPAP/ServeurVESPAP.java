@@ -3,6 +3,7 @@ package VESPAP;
 import JDBC.DatabaseConnection;
 import Tcp.Interface.Protocole;
 import Tcp.ThreadServeur;
+import Tcp.ThreadServeurDemande;
 import Tcp.ThreadServeurPool;
 
 import java.io.FileInputStream;
@@ -20,6 +21,8 @@ public class ServeurVESPAP {
     DatabaseConnection dbConnect;
     private int port;
     private int taillePool;
+    private int portSecure;
+
 
     public ServeurVESPAP() {
         threadServeur = null;
@@ -29,7 +32,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.28.128",
+                    "192.168.122.1",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -45,7 +48,7 @@ public class ServeurVESPAP {
 
             System.out.println("[SERVER] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
-            threadServeurSecure = new ThreadServeurPool(50001, protocoleSecure, taillePool);
+            threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
 
             threadServeur.start();
             threadServeurSecure.start();
@@ -77,6 +80,7 @@ public class ServeurVESPAP {
             properties.load(fis);
 
             port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
+            portSecure = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_SECURE"));
             taillePool = Integer.parseInt(properties.getProperty("NB_THREAD_POOL"));
         } catch (IOException e) {
             System.out.println("ERREUR IOException : " + e);
