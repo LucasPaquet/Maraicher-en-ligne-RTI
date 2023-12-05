@@ -86,8 +86,6 @@ public class ClientVESPAPS {
             byte[] digest = MakeDigest(requete, mdp);
             requete.setDigest(digest);
 
-
-
             // Cryptage de la requete
             RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
 
@@ -115,9 +113,7 @@ public class ClientVESPAPS {
 
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR 2" + ex);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
+        } catch (NoSuchPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);

@@ -32,7 +32,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.122.1",
+                    "10.222.23.244",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
