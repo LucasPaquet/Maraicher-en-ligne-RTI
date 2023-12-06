@@ -63,16 +63,12 @@ public class VESPAPS implements Protocole {
 
         reponse = CrypteReponse(reponse); // crypte la reponse clair
 
-        if (reponse == null)
-        {
-            System.out.println("je usi snyu");
-        }
         return reponse;
     }
 
 
 
-    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGINDigest requete, Socket socket)
+    private synchronized ReponseLOGINId TraiteRequeteLOGIN(RequeteLOGINDigest requete, Socket socket)
     {
         try {
             String mdp = db.getMdp(requete.getLogin());
@@ -92,10 +88,11 @@ public class VESPAPS implements Protocole {
             byte[] digestLocal = md.digest();
 
             if (MessageDigest.isEqual(requete.getPassword(), digestLocal)){
-                return new ReponseLOGIN(true);
+                int id = db.getIdClient(requete.getLogin());
+                return new ReponseLOGINId(true, id);
             }
             else
-                return new ReponseLOGIN(false);
+                return new ReponseLOGINId(false, -1);
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -155,7 +152,7 @@ public class VESPAPS implements Protocole {
         return new ReponseGetVente(ventes);
     }
 
-    private synchronized ReponseLogout TraiteRequeteHandshake(RequeteHandshake requete)
+    private synchronized ReponseHandshake TraiteRequeteHandshake(RequeteHandshake requete)
     {
         try {
             byte[] cleSessionDecryptee;
@@ -169,10 +166,13 @@ public class VESPAPS implements Protocole {
             System.out.println(cleSession);
             keySession = cleSession;
             System.out.println("Crypte : " + requete.getDataSession());
+
+            return new ReponseHandshake(true);
         }catch (Exception e){
             System.out.println("Erreur : " + e);
+            return  new ReponseHandshake(false);
         }
-        return new ReponseLogout(true);
+
     }
 
     private synchronized Requete TraiteRequeteCrypte(RequeteCrypte requete)
@@ -186,7 +186,7 @@ public class VESPAPS implements Protocole {
             ByteArrayInputStream bais = new ByteArrayInputStream(messageDecrypte);
             ObjectInputStream dis = new ObjectInputStream(bais);
             Requete requeteDecrypt = (Requete) dis.readObject();
-            System.out.println("Je viens de le tranformer en : " + requeteDecrypt.getClass());
+            System.out.println("[SERVEUR] Transformation de la requete cypté en : " + requeteDecrypt.getClass());
             return requeteDecrypt;
 
         }catch (Exception e){

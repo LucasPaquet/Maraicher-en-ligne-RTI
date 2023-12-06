@@ -13,7 +13,6 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.List;
 
 public class ClientVESPAPS {
@@ -45,7 +44,7 @@ public class ClientVESPAPS {
 
     // *********************** METHODE VESPAPS **********************************
 
-    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, KeyStoreException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, KeyStoreException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
         // Génération d'une clé de session
         Security.addProvider(new BouncyCastleProvider());
         KeyGenerator cleGen = KeyGenerator.getInstance("DES","BC");
@@ -67,16 +66,14 @@ public class ClientVESPAPS {
 
         oos.writeObject(requete);
 
-        try {
-            Object reponseCrypte = ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
 
-        return true;
+        ReponseHandshake reponse = (ReponseHandshake) ois.readObject();
+
+
+        return reponse.isValide();
     }
 
-    public boolean VESPAPS_Login(String log, String mdp){
+    public int VESPAPS_Login(String log, String mdp){
         try {
             VESPAPS_Handshake();
 
@@ -98,16 +95,16 @@ public class ClientVESPAPS {
                 System.out.println("je suis null");
 
             // Decrypte la Reponse
-            ReponseLOGIN reponse = (ReponseLOGIN) TraiteReponseCrypte(reponseCrypte);
+            ReponseLOGINId reponse = (ReponseLOGINId) TraiteReponseCrypte(reponseCrypte);
 
 
             if (reponse.isValide()) {
                 System.out.println("[CLIENT] Je suis connecté");
                 this.login = log;
-                return true;
+                return reponse.getIdClient();
             } else {
                 System.out.println("[CLIENT] Je suis PAS connecté");
-                return false;
+                return -1;
             }
 
 
@@ -128,7 +125,7 @@ public class ClientVESPAPS {
         } catch (KeyStoreException e) {
             throw new RuntimeException(e);
         }
-        return false;
+        return -1;
     }
 
     public void VESPAPS_Logout(){

@@ -2,11 +2,10 @@ package VESPAP.Reponse;
 
 import Tcp.Interface.Reponse;
 
-public class ReponseLOGIN implements Reponse
-{
+public class ReponseHandshake implements Reponse {
     private boolean valide;
 
-    public ReponseLOGIN(boolean v) {
+    public ReponseHandshake(boolean v) {
         valide = v;
     }
     public boolean isValide() {

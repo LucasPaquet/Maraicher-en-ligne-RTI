@@ -32,7 +32,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "10.222.23.244",
+                    "192.168.28.128",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -46,7 +46,7 @@ public class ServeurVESPAP {
             Protocole protocole = new VESPAP(dbConnect);
             Protocole protocoleSecure = new VESPAPS(dbConnect);
 
-            System.out.println("[SERVER] Lancement des pools");
+            System.out.println("[SERVEUR] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
             threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
 

@@ -42,6 +42,19 @@ public class JdbcVESPAP {
         return "";
     }
 
+    public int getIdClient(String login){
+        try {
+            ResultSet rs = dbConnect.executeQuery("select id from clients where nom LIKE '" + login + "';");
+            while (rs.next()) { // Si au moins une ligne correspond
+
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
+    }
+
     public List<Facture> getFacture(int idClient){
         List<Facture> factures = new ArrayList<>();
         try {

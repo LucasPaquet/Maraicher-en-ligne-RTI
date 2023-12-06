@@ -28,15 +28,15 @@ public class MainWindow extends JFrame{
     private JPanel JPaneFacture;
     private JTable tableFacture;
     private JButton btnBuy;
-    private JButton btnSearch;
+    private JButton btnReload;
     private JPanel JPaneMain;
     private JScrollPane JPaneScroolFacture;
-    private JTextField tfClient;
     private JPanel JpaneSearchClient;
     private JTable tableVente;
     private ClientVESPAPS cl;
     private String ip;
     private int port;
+    private int idClient;
 
     public MainWindow() {
 
@@ -92,7 +92,7 @@ public class MainWindow extends JFrame{
             cl.VESPAPS_Logout();
             LogoutOK();
         });
-        btnSearch.addActionListener(actionEvent -> VESPAPGetFactures());
+        btnReload.addActionListener(actionEvent -> VESPAPGetFactures());
         btnBuy.addActionListener(actionEvent -> {
             VESPAP_Payer();
             VESPAPGetFactures();
@@ -121,8 +121,7 @@ public class MainWindow extends JFrame{
 
         // Partie VESPAPS.Facture
         btnBuy.setEnabled(true);
-        btnSearch.setEnabled(true);
-        tfClient.setEnabled(true);
+        btnReload.setEnabled(true);
     }
 
     private void LogoutOK(){
@@ -136,9 +135,7 @@ public class MainWindow extends JFrame{
 
         // Partie VESPAPS.Facture
         btnBuy.setEnabled(false);
-        btnSearch.setEnabled(false);
-        tfClient.setEnabled(false);
-        tfClient.setText("");
+        btnReload.setEnabled(false);
         viderTableFacture();
         viderTableVente();
 
@@ -171,22 +168,26 @@ public class MainWindow extends JFrame{
             JOptionPane.showMessageDialog(null, "Remplisez les champs !", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        try {
+            idClient = cl.VESPAPS_Login(tfNom.getText(), tfMdp.getText()); // pour enregistrer dans la gui l'id du client
+            if (idClient != -1){
+                JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
+                LoginOK();
+                VESPAPGetFactures();
+            }
+            else
+                JOptionPane.showMessageDialog(null, "Les identifiants sont incorrects", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
 
-        if (cl.VESPAPS_Login(tfNom.getText(), tfMdp.getText())){
-            JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
-            LoginOK();
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Une erreur est survenu : " + e, "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
         }
-        else
-            JOptionPane.showMessageDialog(null, "Les identifiants sont incorrects", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
 
     }
 
     private void VESPAPGetFactures(){
         List<Facture> factures;
 
-        try { // si on arrive pas à convertir le chalos quantite en int
-
-            int idClient = Integer.parseInt(tfClient.getText());
+        try {
 
             if (idClient > 0){ // pour empecher les nombres negatif
                 factures = cl.VESPAPS_GetFactures(idClient);

@@ -15,7 +15,7 @@ public class ThreadServeurDemande extends ThreadServeur{
     @Override
     public void run()
     {
-        System.out.println("Démarrage du TH Serveur (Demande)...");
+        System.out.println("[SERVEUR] Démarrage du thread Serveur (Demande)...");
         while(!this.isInterrupted())
         {
             Socket csocket;
@@ -23,7 +23,7 @@ public class ThreadServeurDemande extends ThreadServeur{
             {
                 ssocket.setSoTimeout(2000);
                 csocket = ssocket.accept();
-                System.out.println("Connexion acceptée, création TH Client");
+                System.out.println("[SERVEUR] Connexion acceptée, création thread Client");
                 Thread th = new ThreadClientDemande(protocole,csocket);
                 th.start();
             }
@@ -36,7 +36,7 @@ public class ThreadServeurDemande extends ThreadServeur{
                 System.out.println("Erreur I/O");
             }
         }
-        System.out.println("TH Serveur (Demande) interrompu.");
+        System.out.println("[SERVEUR] Thread Serveur (Demande) interrompu.");
         try { ssocket.close(); }
         catch (IOException ex) { System.out.println("Erreur I/O"); }
     }
