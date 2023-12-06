@@ -5,17 +5,11 @@ import VESPAP.Facture;
 import VESPAP.Vente;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Properties;
 
@@ -45,17 +39,10 @@ public class MainWindow extends JFrame{
         // Connexion serveur
         try {
             cl = new ClientVESPAPS(ip, port);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (UnrecoverableKeyException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
 
 
         // pour qu'on ne puisse que selectionne une seule ligne a la fois
@@ -100,12 +87,10 @@ public class MainWindow extends JFrame{
 
         // ******* Clique sur ligne du tableau *********
 
-        tableFacture.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    viderTableVente();
-                    VESPAP_GetVente();
-                }
+        tableFacture.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                viderTableVente();
+                VESPAP_GetVente();
             }
         });
     }
@@ -252,7 +237,7 @@ public class MainWindow extends JFrame{
     }
 
     private void VESPAP_GetVente(){
-        List<Vente> ventes = null;
+        List<Vente> ventes;
         // Recuperation la ligne sélectionnée
         int selectedRow = tableFacture.getSelectedRow();
 
