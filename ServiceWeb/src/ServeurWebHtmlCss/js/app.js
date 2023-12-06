@@ -2,26 +2,6 @@
     miseAJourTable(); // s'execute au cahrgement du script
 })();
 
-document.getElementById('add').addEventListener("click",function() {
-    miseAJourTable()
-    /*
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function()
-    {
-
-    };
-    xhr.open("POST","http://localhost:8080/api/tasks",true);
-    xhr.responseType = "text";
-    xhr.setRequestHeader("Content-type","text/plain");
-    let body = "ca marche";
-    xhr.send(body);
-    document.getElementById('description').value = "";
-    document.getElementById('id').value = "";
-
-     */
-
-});
-
 document.getElementById('update').addEventListener("click",function() {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()

@@ -73,7 +73,7 @@ public class MaraicherAPI implements HttpHandler{
                 }
 
 
-                sendResponse(exchange, 200, "Tache mise a jour avec succes");
+                sendResponse(exchange, 200, "Article mise a jour avec succes");
             }
             else sendResponse(exchange, 400, "ID de tache manquant dans les parametres");
         }
