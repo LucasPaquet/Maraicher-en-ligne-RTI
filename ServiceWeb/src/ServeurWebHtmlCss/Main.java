@@ -10,7 +10,7 @@ public class Main
         HttpServer serveur;
         try
         {
-            serveur = HttpServer.create(new InetSocketAddress(8080),0);
+            serveur = HttpServer.create(new InetSocketAddress(8081),0);
             serveur.createContext("/",new HandlerHtml());
             serveur.createContext("/css",new HandlerCss());
             serveur.createContext("/js", new HandlerJs());

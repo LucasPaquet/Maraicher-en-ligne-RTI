@@ -1,10 +1,8 @@
 package VESPAP;
 
 import JDBC.DatabaseConnection;
+import Tcp.*;
 import Tcp.Interface.Protocole;
-import Tcp.ThreadServeur;
-import Tcp.ThreadServeurDemande;
-import Tcp.ThreadServeurPool;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,11 +15,15 @@ import java.util.Properties;
 
 public class ServeurVESPAP {
     ThreadServeur threadServeur;
+    ThreadServeurTLS threadServeurTLS;
     ThreadServeur threadServeurSecure;
     DatabaseConnection dbConnect;
     private int port;
     private int taillePool;
+    private int portTLS;
+    private int taillePoolTLS;
     private int portSecure;
+
 
 
     public ServeurVESPAP() {
@@ -32,7 +34,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "10.222.23.244",
+                    "192.168.0.25",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -47,10 +49,16 @@ public class ServeurVESPAP {
             Protocole protocoleSecure = new VESPAPS(dbConnect);
 
             System.out.println("[SERVER] Lancement des pools");
+
+            // non-secure
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
+            // TLS
+            threadServeurTLS = new ThreadServeurPoolTLS(portTLS,protocole,taillePoolTLS);
+            // crypte
             threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
 
             threadServeur.start();
+            threadServeurTLS.start();
             threadServeurSecure.start();
         }
         catch (NumberFormatException ex)
@@ -81,7 +89,9 @@ public class ServeurVESPAP {
 
             port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
             portSecure = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_SECURE"));
+            portTLS = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_TLS"));
             taillePool = Integer.parseInt(properties.getProperty("NB_THREAD_POOL"));
+            taillePoolTLS = Integer.parseInt(properties.getProperty("NB_THREAD_POOL_TLS"));
         } catch (IOException e) {
             System.out.println("ERREUR IOException : " + e);
             e.printStackTrace();
