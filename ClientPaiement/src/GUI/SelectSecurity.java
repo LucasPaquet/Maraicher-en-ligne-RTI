@@ -1,8 +1,6 @@
 package GUI;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SelectSecurity extends JFrame{
     private JPanel JPanelMain;
@@ -15,13 +13,10 @@ public class SelectSecurity extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
-        btnOk.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainWindow gui = new MainWindow(cbTls.isSelected());
-                dispose();
-                gui.setVisible(true);
-            }
+        btnOk.addActionListener(e -> {
+            MainWindow gui = new MainWindow(cbTls.isSelected());
+            dispose();
+            gui.setVisible(true);
         });
     }
 }

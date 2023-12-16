@@ -24,13 +24,11 @@ public class ClientVESPAP {
 
     public ClientVESPAP(boolean tls) {
         initConfig();
-        System.out.println("Je suis en INTI" + port + ip + portTLS);
         oos = null;
         ois = null;
 
         try {
             if (tls){
-                System.out.println("Je suis en TLS");
                 KeyStore ServerKs = KeyStore.getInstance("JKS");
 
                 String FICHIER_KEYSTORE = "client.jks";
@@ -52,11 +50,10 @@ public class ClientVESPAP {
 
                 SslC.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-                SSLSocketFactory SslSFac= SslC.getSocketFactory();
-                socket = (SSLSocket) SslSFac.createSocket(ip, portTLS);
+                SSLSocketFactory SslSFac = SslC.getSocketFactory();
+                socket = SslSFac.createSocket(ip, portTLS);
             }else
             {
-                System.out.println("Je suis en PAS");
                 socket = new Socket(ip, port);
             }
 
@@ -101,7 +98,7 @@ public class ClientVESPAP {
             oos.writeObject(requetes);
 
             // Réception réponse
-            ReponseLogout reponse = (ReponseLogout) ois.readObject();
+            ois.readObject();
         }
         catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR : " + ex);
@@ -177,7 +174,7 @@ public class ClientVESPAP {
             portTLS = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_TLS"));
             ip = properties.getProperty("IP_PAIEMENT");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erreur d'init config : " + e);
         }
     }
 }

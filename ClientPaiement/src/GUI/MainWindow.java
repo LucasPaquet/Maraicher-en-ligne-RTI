@@ -10,10 +10,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 public class MainWindow extends JFrame{
     private JTextField tfNom;
@@ -31,8 +28,6 @@ public class MainWindow extends JFrame{
     private JPanel JpaneSearchClient;
     private JTable tableVente;
     private ClientVESPAP cl;
-    private String ip;
-    private int port;
     private boolean tls;
 
     public MainWindow(boolean cbtls) {
