@@ -6,10 +6,6 @@ import Tcp.Interface.Protocole;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -34,7 +30,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.0.25",
+                    "192.168.0.26",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -61,21 +57,9 @@ public class ServeurVESPAP {
             threadServeurTLS.start();
             threadServeurSecure.start();
         }
-        catch (NumberFormatException ex)
+        catch (Exception ex)
         {
-            System.out.println("ERREUR NumberFormatException : " + ex);
-        }
-        catch (IOException ex)
-        {
-            System.out.println("ERREUR IOException : " + ex);
-        } catch (UnrecoverableKeyException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            System.out.println("ERREUR ServeruVESPAP : " + ex);
         }
     }
 
@@ -94,7 +78,6 @@ public class ServeurVESPAP {
             taillePoolTLS = Integer.parseInt(properties.getProperty("NB_THREAD_POOL_TLS"));
         } catch (IOException e) {
             System.out.println("ERREUR IOException : " + e);
-            e.printStackTrace();
         }
     }
 }

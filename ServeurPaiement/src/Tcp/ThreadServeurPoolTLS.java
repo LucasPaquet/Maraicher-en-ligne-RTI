@@ -4,14 +4,13 @@ import Tcp.Interface.Protocole;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 public class ThreadServeurPoolTLS extends ThreadServeurTLS{
     private FileAttente connexionsEnAttente;
     private ThreadGroup pool;
     private int taillePool;
 
-    public ThreadServeurPoolTLS(int port, Protocole protocole, int taillePool) throws IOException
+    public ThreadServeurPoolTLS(int port, Protocole protocole, int taillePool)
     {
         super(port, protocole);
 
@@ -44,12 +43,8 @@ public class ThreadServeurPoolTLS extends ThreadServeurTLS{
                 csocket = ssocket.accept();
                 connexionsEnAttente.addConnexion(csocket);
             }
-            catch (SocketTimeoutException ex)
-            {
-                // Pour vérifier si le thread a été interrompu
-            }
-            catch (IOException ex)
-            {
+            catch (Exception ex) {
+                System.out.println("Erreur de ThreadServeurPoolTLS" + ex);
             }
         }
         pool.interrupt();

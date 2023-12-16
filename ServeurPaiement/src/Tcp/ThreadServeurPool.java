@@ -43,13 +43,11 @@ public class ThreadServeurPool extends ThreadServeur
                 csocket = ssocket.accept();
                 connexionsEnAttente.addConnexion(csocket);
             }
-            catch (SocketTimeoutException ex)
+            catch (Exception ex)
             {
-                // Pour vérifier si le thread a été interrompu
+               System.out.println("Erreur de ThreadServeurPool" + ex);
             }
-            catch (IOException ex)
-            {
-            }
+
         }
         pool.interrupt();
     }

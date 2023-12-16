@@ -13,7 +13,6 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.List;
 
 public class ClientVESPAPS {
@@ -45,7 +44,7 @@ public class ClientVESPAPS {
 
     // *********************** METHODE VESPAPS **********************************
 
-    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, KeyStoreException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, IOException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         // Génération d'une clé de session
         Security.addProvider(new BouncyCastleProvider());
         KeyGenerator cleGen = KeyGenerator.getInstance("DES","BC");
@@ -111,22 +110,8 @@ public class ClientVESPAPS {
             }
 
 
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (Exception ex) {
             System.out.println("ERREUR 2" + ex);
-        } catch (NoSuchPaddingException | IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
         }
         return false;
     }
@@ -143,7 +128,7 @@ public class ClientVESPAPS {
             oos.writeObject(requeteCrypte);
 
             // Réception réponse
-            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+            ois.readObject();
 
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR 2" + ex);
@@ -245,8 +230,7 @@ public class ClientVESPAPS {
             // Récupération des données claires
             ByteArrayInputStream bais = new ByteArrayInputStream(messageDecrypte);
             ObjectInputStream dis = new ObjectInputStream(bais);
-            Reponse reponseDecrypt = (Reponse) dis.readObject();
-            return reponseDecrypt;
+            return (Reponse) dis.readObject();
 
         }catch (Exception e){
             System.out.println("Erreur : " + e);
@@ -264,24 +248,12 @@ public class ClientVESPAPS {
             byte[] requeteClaire = baos.toByteArray();
 
             // Cryptage de la requete (qui est en byte[])
-            RequeteCrypte requeteCrypte = new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
 
-            return requeteCrypte;
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+            return new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return null;
     }
 
     // *************************** METHODE D'AUTH et INTEGRITE *******************************
@@ -303,13 +275,10 @@ public class ClientVESPAPS {
 
             return md.digest();
 
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return null;
     }
 
     private byte[] SignFacture(int idClient){
@@ -322,17 +291,10 @@ public class ClientVESPAPS {
             dos.writeInt(idClient);
             s.update(baos.toByteArray());
             return s.sign();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SignatureException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return null;
     }
     private boolean VerifyHmac(ReponsePayFacturesHMAC reponse) {
         try {
@@ -362,16 +324,14 @@ public class ClientVESPAPS {
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("client.jks"),"azerty".toCharArray());
         X509Certificate certif = (X509Certificate)ks.getCertificate("serveur");
-        PublicKey cle = certif.getPublicKey();
-        return cle;
+        return certif.getPublicKey();
     }
 
     public static PrivateKey RecupereClePriveeClient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
         // Récupération de la clé publique de Jean-Marc dans le keystore de Christophe
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("client.jks"),"azerty".toCharArray());
-        PrivateKey cle = (PrivateKey) ks.getKey("client","azerty".toCharArray());
-        return cle;
+        return (PrivateKey) ks.getKey("client","azerty".toCharArray());
     }
 
     public boolean IsOosNull() {

@@ -56,9 +56,5 @@ public abstract class ThreadServeurTLS extends Thread
         }catch (Exception e){
             System.out.println("Erreur d : " + e);
         }
-        // Version sécurisée
-        // ssocket = (SSLSocket) SslSSocket.accept();
-
-        //ssocket = new ServerSocket(port);
     }
 }

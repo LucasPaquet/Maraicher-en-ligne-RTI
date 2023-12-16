@@ -63,10 +63,6 @@ public class VESPAPS implements Protocole {
 
         reponse = CrypteReponse(reponse); // crypte la reponse clair
 
-        if (reponse == null)
-        {
-            System.out.println("je usi snyu");
-        }
         return reponse;
     }
 
@@ -98,14 +94,10 @@ public class VESPAPS implements Protocole {
                 return new ReponseLOGIN(false);
 
 
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
-
+        return null;
     }
 
     private synchronized ReponseLogout TraiteRequeteLOGOUT(RequeteLOGOUT requete)//  throws FinConnexionException
@@ -209,21 +201,10 @@ public class VESPAPS implements Protocole {
             ReponseCrypte reponseCrypte = new ReponseCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
 
             return reponseCrypte;
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return null;
     }
     /**
      * Vérifie si le string passé en paramètre est un numéro de carte Visa valide (basé sur l'algorithme de Luhn)
@@ -284,17 +265,10 @@ public class VESPAPS implements Protocole {
             // Vérification de la signature reçue
             return s.verify(requete.getSignature());
 
-        } catch (SignatureException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return false;
     }
     private byte[] GenerateHmac(ReponsePayFacturesHMAC requete){
         try {
