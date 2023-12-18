@@ -2,6 +2,7 @@
     miseAJourTable(); // s'execute au cahrgement du script
 })();
 
+
 document.getElementById('update').addEventListener("click",function() {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()
