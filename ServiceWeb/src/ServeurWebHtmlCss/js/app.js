@@ -1,7 +1,6 @@
 (function() {
-    miseAJourTable(); // s'execute au cahrgement du script
+    miseAJourTable(); // s'execute au chargement du script
 })();
-
 
 document.getElementById('update').addEventListener("click",function() {
     let xhr = new XMLHttpRequest();
@@ -20,7 +19,7 @@ document.getElementById('update').addEventListener("click",function() {
             alert("Une erreur est survenue...");
         }
     };
-    let url = "http://127.0.0.1:8080/api/tasks?id=" + document.getElementById('idInput').value;
+    let url = "http://172.20.10.3:8080/api/tasks?id=" + document.getElementById('idInput').value;
     xhr.open("PUT",url,true);
 
     xhr.responseType = "text";
@@ -55,10 +54,10 @@ function miseAJourTable()
             })
         }
         else if (this.readyState === 4) {
-            alert("Une erreur est survenue...");
+            alert("ERREUR " + this.readyState + " et " + this.status);
         }
     };
-    xhr.open("GET","http://localhost:8080/api/tasks",true);
+    xhr.open("GET","http://172.20.10.3:8080/api/tasks",true);
     xhr.responseType = "json";
     xhr.send();
 
