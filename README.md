@@ -54,6 +54,18 @@ Protocol pour les communications entre le client (Java) et serveur (Java) pour f
 | Logout      | /                                         | /                                                                     | /                                                                                                                   |               
 
 
+### « VEgetables Shopping PAyment Protocol Secure (VESPAPS) : 
+
+Protocol pour les communications entre le client (Java) et serveur (Java) pour faire payer une commande du Maraîcher en ligne de manière sécurisé.
+
+| Commande    | Requête                                   | Réponse                                                               | Actions / Explications                                                                                              |
+|-------------|-------------------------------------------|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| Login       | Login, password, (d'un emmployé) -> **handshake pour l'envoi d'une clé de session**         | Oui ou non -> **réception d'une clé de session** | Vérification du login et du mot passe dans la table des employés. **Ne doit pas transiter en clair sur le réseau -> digest salé**  |
+| Get Factures| idClient + **signature du client**| Liste des factures (idFacture, date, montant, payé) **cryptée symétriquement** | On récupère simplement les factures du client dans la table factures (sans le contenu détaillé de la commande donc) |   
+| Pay Factures| idFacture, nom et numéro de la carte VISA, le tout **cryptée symétriquement** | Oui ou non (carte VISA invalide) + **HMAC de la réponse** | Le serveur se contente de vérifier la validité du numéro de carte → si ok, on considère que le paiement est réalisé |       
+| Logout      | /                                         | /                                                                     | /                                                                                                                   |               
+
+
 ---
 
 # Partie 1

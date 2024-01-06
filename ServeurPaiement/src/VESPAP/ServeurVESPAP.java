@@ -3,18 +3,26 @@ package VESPAP;
 import JDBC.DatabaseConnection;
 import Tcp.Interface.Protocole;
 import Tcp.ThreadServeur;
+import Tcp.ThreadServeurDemande;
 import Tcp.ThreadServeurPool;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class ServeurVESPAP {
     ThreadServeur threadServeur;
+    ThreadServeur threadServeurSecure;
     DatabaseConnection dbConnect;
     private int port;
     private int taillePool;
+    private int portSecure;
+
 
     public ServeurVESPAP() {
         threadServeur = null;
@@ -36,11 +44,14 @@ public class ServeurVESPAP {
         try
         {
             Protocole protocole = new VESPAP(dbConnect);
+            Protocole protocoleSecure = new VESPAPS(dbConnect);
 
-            System.out.println("[SERVER] Lancement du pool");
+            System.out.println("[SERVEUR] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
+            threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
 
             threadServeur.start();
+            threadServeurSecure.start();
         }
         catch (NumberFormatException ex)
         {
@@ -49,6 +60,14 @@ public class ServeurVESPAP {
         catch (IOException ex)
         {
             System.out.println("ERREUR IOException : " + ex);
+        } catch (UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -61,6 +80,7 @@ public class ServeurVESPAP {
             properties.load(fis);
 
             port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
+            portSecure = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_SECURE"));
             taillePool = Integer.parseInt(properties.getProperty("NB_THREAD_POOL"));
         } catch (IOException e) {
             System.out.println("ERREUR IOException : " + e);

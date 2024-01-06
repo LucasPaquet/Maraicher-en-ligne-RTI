@@ -8,7 +8,10 @@ import Tcp.Interface.Requete;
 import VESPAP.Reponse.*;
 import VESPAP.Requete.*;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,7 +20,7 @@ public class VESPAP implements Protocole
     JdbcVESPAP db;
     private final HashMap<String,Socket> clientsConnectes;
 
-    public VESPAP(DatabaseConnection dbc) {
+    public VESPAP(DatabaseConnection dbc) throws UnrecoverableKeyException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         clientsConnectes = new HashMap<>();
         db = new JdbcVESPAP(dbc);
     }

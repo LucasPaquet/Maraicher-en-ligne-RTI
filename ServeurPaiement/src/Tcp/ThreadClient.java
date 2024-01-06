@@ -55,6 +55,9 @@ public abstract class ThreadClient extends Thread
                 {
                     Requete requete = (Requete) ois.readObject();
                     Reponse reponse = protocole.TraiteRequete(requete,csocket);
+                    if (reponse == null)
+                        System.out.println("JE SUIS VRAIMENT NULL");
+
                     oos.writeObject(reponse);
                 }
             }
