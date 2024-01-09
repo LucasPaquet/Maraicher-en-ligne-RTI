@@ -59,7 +59,7 @@ public class VESPAPS implements Protocole {
         if (requete instanceof RequeteGetVente)
             reponse = TraiteRequeteGetVente((RequeteGetVente) requete);
         if (requete instanceof RequeteHandshake)
-            return TraiteRequeteHandshake((RequeteHandshake) requete); // TODO : repondre ok avec le message crypte
+            return TraiteRequeteHandshake((RequeteHandshake) requete);
 
         reponse = CrypteReponse(reponse); // crypte la reponse clair
 

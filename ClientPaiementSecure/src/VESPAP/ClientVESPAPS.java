@@ -175,12 +175,11 @@ public class ClientVESPAPS {
             // Decrypte la Reponse
             ReponsePayFacturesHMAC reponse = (ReponsePayFacturesHMAC) TraiteReponseCrypte(reponseCrypte);
 
-            if (VerifyHmac(reponse))
+            if (VerifyHmac(reponse)) {
                 if (reponse != null) {
                     return reponse.isPaid();
                 }
-            else
-                return false;
+            }
 
         } catch (Exception ex) {
             System.out.println("ERREUR : " + ex);

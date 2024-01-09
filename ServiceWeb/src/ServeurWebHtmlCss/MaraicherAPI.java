@@ -23,7 +23,7 @@ public class MaraicherAPI implements HttpHandler{
         DatabaseConnection dbConnect;
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "10.222.23.184",
+                    "192.168.148.212",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");

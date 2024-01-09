@@ -19,7 +19,7 @@ public class Main
     public static void main(String[] args)
     {
         HttpServer serveur;
-        HttpsServer serverHTTPS;
+        // HttpsServer serverHTTPS;
 
         try // ONLY HTTP
         {
@@ -27,12 +27,9 @@ public class Main
             serveur.createContext("/",new HandlerHtml());
             serveur.createContext("/css",new HandlerCss());
             serveur.createContext("/js", new HandlerJs());
-            serveur.createContext("/api/tasks", new MaraicherAPI());
+            serveur.createContext("/api/articles", new MaraicherAPI());
             serveur.createContext("/images",new HandlerImages());
-            /*
 
-            serveur.createContext("/pdfs",new HandlerPdfs());
-             */
             System.out.println("Demarrage du serveur HTTP...");
             serveur.start();
         }
@@ -40,7 +37,7 @@ public class Main
         {
             System.out.println("Erreur: HTTP" + e.getMessage());
         }
-
+        /*
         try {   // ONLY HTTPS
             // Chargement du keystore
             char[] keystorePassword = "azerty".toCharArray();
@@ -86,5 +83,7 @@ public class Main
         } catch (Exception e) {
             System.out.println("Erreur de HTTPS: " + e.getMessage());
         }
+
+         */
     }
 }

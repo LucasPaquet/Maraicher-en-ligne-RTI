@@ -1,6 +1,7 @@
 html {
     padding: 10px;
 }
+
 body {
     font-family: Arial, sans-serif;
     background-repeat: repeat-y;
@@ -8,10 +9,12 @@ body {
 
 
 }
+
 h1, h2 {
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
+
 .mainTitle {
     text-align: center;
     font-family: "Calibri", sans-serif;
@@ -20,7 +23,6 @@ h1, h2 {
     letter-spacing: 2px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
-
 
 
 #conteneur {
@@ -45,7 +47,6 @@ h1, h2 {
 }
 
 
-
 /* Appliquer un style différent à la première ligne */
 #tableArticle tr:first-child {
     font-weight: bold; /* Texte en gras dans la première ligne */
@@ -55,12 +56,10 @@ h1, h2 {
 }
 
 
-
 #tableArticle {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    background-image: url("../images/bg/bg2crop.jpg");
 }
 
 #tableArticle th, #tableArticle td {
@@ -90,3 +89,10 @@ h1, h2 {
     pointer-events: none;
 }
 
+#textLog {
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    padding-left: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
