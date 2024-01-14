@@ -14,9 +14,9 @@ public class ThreadClientDemande extends ThreadClient {
     @Override
     public void run()
     {
-        System.out.println("TH Client (Demande) démarre...");
+        System.out.println("[SERVEUR] Thread Client (Demande) démarre...");
         super.run();
-        System.out.println("TH Client (Demande) se termine.");
+        System.out.println("[SERVEUR] Thread Client (Demande) se termine.");
     }
 
 }

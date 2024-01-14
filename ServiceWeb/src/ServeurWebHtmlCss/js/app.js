@@ -1,26 +1,6 @@
 (function() {
-    miseAJourTable(); // s'execute au cahrgement du script
+    miseAJourTable(); // s'execute au chargement du script
 })();
-
-document.getElementById('add').addEventListener("click",function() {
-    miseAJourTable()
-    /*
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function()
-    {
-
-    };
-    xhr.open("POST","http://localhost:8080/api/tasks",true);
-    xhr.responseType = "text";
-    xhr.setRequestHeader("Content-type","text/plain");
-    let body = "ca marche";
-    xhr.send(body);
-    document.getElementById('description').value = "";
-    document.getElementById('id').value = "";
-
-     */
-
-});
 
 document.getElementById('update').addEventListener("click",function() {
     let xhr = new XMLHttpRequest();
@@ -39,7 +19,7 @@ document.getElementById('update').addEventListener("click",function() {
             alert("Une erreur est survenue...");
         }
     };
-    let url = "http://127.0.0.1:8080/api/tasks?id=" + document.getElementById('idInput').value;
+    let url = "http://192.168.148.131:8080/api/articles?id=" + document.getElementById('idInput').value;
     xhr.open("PUT",url,true);
 
     xhr.responseType = "text";
@@ -74,10 +54,10 @@ function miseAJourTable()
             })
         }
         else if (this.readyState === 4) {
-            alert("Une erreur est survenue...");
+            alert("ERREUR " + this.readyState + " et " + this.status);
         }
     };
-    xhr.open("GET","http://localhost:8080/api/tasks",true);
+    xhr.open("GET","http://192.168.148.131:8080/api/articles",true);
     xhr.responseType = "json";
     xhr.send();
 
@@ -121,16 +101,16 @@ function videTable() {
 
 function attacherGestionnaireLigne(ligne, image) {
     ligne.addEventListener("click", function() {
-        // Récupérer les cellules de la ligne cliquée
+        // Recuperer les cellules de la ligne cliquee
         let cells = ligne.cells;
 
-        // Récupérer les valeurs des cellules
+        // Recuperer les valeurs des cellules
         let id = cells[0].textContent;
         let intitule = cells[1].textContent;
         let prix = cells[2].textContent;
         let stock = cells[3].textContent;
 
-        // Mettre à jour les champs d'entrée avec les valeurs
+        // Mettre à jour les champs d'entree avec les valeurs
         document.getElementById("idInput").value = id;
         document.getElementById("intituleInput").value = intitule;
         document.getElementById("prixInput").value = prix;

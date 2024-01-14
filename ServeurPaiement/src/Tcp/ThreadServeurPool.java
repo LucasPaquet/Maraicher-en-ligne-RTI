@@ -25,6 +25,7 @@ public class ThreadServeurPool extends ThreadServeur
         // Création du pool de threads
         try
         {
+            System.out.println("[SERVEUR] Démarrage du thread Serveur (POOL)...");
             for (int i=0 ; i<taillePool ; i++)
                 new ThreadClientPool(protocole,connexionsEnAttente,pool).start();
         }

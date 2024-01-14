@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Ma Première Page Web avec CSS</title>
+    <title>Gestion du stock du Maraîcher en ligne</title>
     <link href="css/style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
@@ -11,7 +11,7 @@
     </div>
     <div id="conteneur">
         <div>
-            <h1 class="monTitre">Table exemple</h1>
+            <h1 class="titleArticle">Tableau d'article</h1>
 
             <table id="tableArticle">
                 <tr>
@@ -21,27 +21,26 @@
                     <td>Quantité</td>
                 </tr>
                 <tr>
-                    <td>Wagner</td>
-                    <td>Jean-Marc</td>
+                    <td>Pommes</td>
+                    <td>Poire</td>
                     <td>27</td>
                     <td>27</td>
                 </tr>
                 <tr>
-                    <td>Hiard</td>
-                    <td>Samuel</td>
+                    <td>Abricot</td>
+                    <td>Mange-tout</td>
                     <td>76</td>
                     <td>27</td>
                 </tr>
             </table>
 
-            <button id="add">Ajouter</button>
-            <p style="color: blue; font-weight: bold; font-size: 15px; padding-left: 10px" id="textLog">...statut de la requête...</p>
+            <p id="textLog">...statut de la requête...</p>
         </div>
 
 
         <div id="divForm">
             <p><b>Éditer le produit</b></p>
-            <img id="imgProduit" src="images/missing.jpg">
+            <img alt="Image de l'article sélectionné" id="imgProduit" src="images/missing.jpg">
             <br>
 
             <label for="idInput">ID : </label>
@@ -60,7 +59,6 @@
         </div>
 
     </div>
-
 
     <script src="js/app.js"></script>
 

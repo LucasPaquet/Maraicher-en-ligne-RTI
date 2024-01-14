@@ -44,7 +44,8 @@ public class ClientVESPAPS {
 
     // *********************** METHODE VESPAPS **********************************
 
-    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, IOException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+
+    public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, IOException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
         // Génération d'une clé de session
         Security.addProvider(new BouncyCastleProvider());
         KeyGenerator cleGen = KeyGenerator.getInstance("DES","BC");
@@ -66,54 +67,46 @@ public class ClientVESPAPS {
 
         oos.writeObject(requete);
 
-        try {
-            Object reponseCrypte = ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
 
-        return true;
+        ReponseHandshake reponse = (ReponseHandshake) ois.readObject();
+
+
+        return reponse.isValide();
     }
 
-    public boolean VESPAPS_Login(String log, String mdp){
+    public int VESPAPS_Login(String log, String mdp){
         try {
-            VESPAPS_Handshake();
+            if (VESPAPS_Handshake())
+            {
+                // Creation et envoie de la requete
+                RequeteLOGINDigest requete = new RequeteLOGINDigest(log);
 
-            // Creation et envoie de la requete
-            RequeteLOGINDigest requete = new RequeteLOGINDigest(log);
+                byte[] digest = MakeDigest(requete, mdp);
+                requete.setDigest(digest);
 
-            byte[] digest = MakeDigest(requete, mdp);
-            requete.setDigest(digest);
+                // Cryptage de la requete
+                RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
 
-            // Cryptage de la requete
-            RequeteCrypte requeteCrypte = ConvertToRequeteCrypte(requete);
+                // Envoie de la requete crypte
+                oos.writeObject(requeteCrypte);
 
-            // Envoie de la requete crypte
-            oos.writeObject(requeteCrypte);
+                // Réception réponse
+                ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
 
-            // Réception réponse
-            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
-            if (reponseCrypte == null)
-                System.out.println("je suis null");
-
-            // Decrypte la Reponse
-            ReponseLOGIN reponse = (ReponseLOGIN) TraiteReponseCrypte(reponseCrypte);
+                // Decrypte la Reponse
+                ReponseLOGINId reponse = (ReponseLOGINId) TraiteReponseCrypte(reponseCrypte);
 
 
-            if (reponse.isValide()) {
-                System.out.println("[CLIENT] Je suis connecté");
-                this.login = log;
-                return true;
-            } else {
-                System.out.println("[CLIENT] Je suis PAS connecté");
-                return false;
+                if (reponse != null && reponse.isValide()) {
+                    System.out.println("[CLIENT] Je suis connecté");
+                    this.login = log;
+                    return reponse.getIdClient();
+                }
             }
-
-
         } catch (Exception ex) {
             System.out.println("ERREUR 2" + ex);
         }
-        return false;
+        return -1;
     }
 
     public void VESPAPS_Logout(){
@@ -154,7 +147,7 @@ public class ClientVESPAPS {
             // Decryptage de la reponse
             ReponseGetFactures reponse = (ReponseGetFactures) TraiteReponseCrypte(reponseCrypte);
 
-            return reponse.getFactures();
+            return reponse != null ? reponse.getFactures() : null;
 
 
         } catch (Exception ex) {
@@ -176,16 +169,15 @@ public class ClientVESPAPS {
 
             // Réception réponse
             ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
-            if (reponseCrypte == null)
-                System.out.println("je suis null");
 
             // Decrypte la Reponse
             ReponsePayFacturesHMAC reponse = (ReponsePayFacturesHMAC) TraiteReponseCrypte(reponseCrypte);
 
-            if (VerifyHmac(reponse))
-                return reponse.isPaid();
-            else
-                return false;
+            if (VerifyHmac(reponse)) {
+                if (reponse != null) {
+                    return reponse.isPaid();
+                }
+            }
 
         } catch (Exception ex) {
             System.out.println("ERREUR : " + ex);
@@ -210,7 +202,7 @@ public class ClientVESPAPS {
             // Decryptage de la reponse
             ReponseGetVente reponse = (ReponseGetVente) TraiteReponseCrypte(reponseCrypte);
 
-            return reponse.getVente();
+            return reponse != null ? reponse.getVente() : null;
 
 
         } catch (Exception ex) {
@@ -252,6 +244,7 @@ public class ClientVESPAPS {
             return new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
         } catch (Exception ex) {
             System.out.println("Erreur de VESPAPS" + ex);
+
         }
         return null;
     }
@@ -275,6 +268,7 @@ public class ClientVESPAPS {
 
             return md.digest();
 
+
         } catch (Exception ex) {
             System.out.println("Erreur de VESPAPS" + ex);
         }
@@ -291,8 +285,9 @@ public class ClientVESPAPS {
             dos.writeInt(idClient);
             s.update(baos.toByteArray());
             return s.sign();
-        } catch (Exception ex) {
-            System.out.println("Erreur de VESPAPS" + ex);
+        } catch (Exception e) {
+            System.out.println("Erreur de signature : " + e);
+            return null;
         }
         return null;
     }

@@ -23,7 +23,7 @@ public class MaraicherAPI implements HttpHandler{
         DatabaseConnection dbConnect;
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "10.222.23.170",
+                    "192.168.148.212",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -73,7 +73,7 @@ public class MaraicherAPI implements HttpHandler{
                 }
 
 
-                sendResponse(exchange, 200, "Tache mise a jour avec succes");
+                sendResponse(exchange, 200, "Article mise a jour avec succes");
             }
             else sendResponse(exchange, 400, "ID de tache manquant dans les parametres");
         }

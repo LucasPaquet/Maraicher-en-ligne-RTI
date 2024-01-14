@@ -59,7 +59,7 @@ public class VESPAPS implements Protocole {
         if (requete instanceof RequeteGetVente)
             reponse = TraiteRequeteGetVente((RequeteGetVente) requete);
         if (requete instanceof RequeteHandshake)
-            return TraiteRequeteHandshake((RequeteHandshake) requete); // TODO : repondre ok avec le message crypte
+            return TraiteRequeteHandshake((RequeteHandshake) requete);
 
         reponse = CrypteReponse(reponse); // crypte la reponse clair
 
@@ -68,11 +68,10 @@ public class VESPAPS implements Protocole {
 
 
 
-    private synchronized ReponseLOGIN TraiteRequeteLOGIN(RequeteLOGINDigest requete, Socket socket)
+    private synchronized ReponseLOGINId TraiteRequeteLOGIN(RequeteLOGINDigest requete, Socket socket)
     {
         try {
             String mdp = db.getMdp(requete.getLogin());
-            System.out.println("MDP : " + mdp);
             // Construction du digest local
             MessageDigest md = MessageDigest.getInstance("SHA-1","BC");
 
@@ -88,14 +87,15 @@ public class VESPAPS implements Protocole {
             byte[] digestLocal = md.digest();
 
             if (MessageDigest.isEqual(requete.getPassword(), digestLocal)){
-                return new ReponseLOGIN(true);
+                int id = db.getIdClient(requete.getLogin());
+                return new ReponseLOGINId(true, id);
             }
             else
-                return new ReponseLOGIN(false);
+                return new ReponseLOGINId(false, -1);
+        } catch (Exception e) {
+            System.out.println("Erreur de LOGIN digest : " + e);
+            return new ReponseLOGINId(false, -1);
 
-
-        } catch (Exception ex) {
-            System.out.println("Erreur de VESPAPS" + ex);
         }
         return null;
     }
@@ -147,26 +147,28 @@ public class VESPAPS implements Protocole {
         return new ReponseGetVente(ventes);
     }
 
-    private synchronized ReponseLogout TraiteRequeteHandshake(RequeteHandshake requete)
+    private synchronized ReponseHandshake TraiteRequeteHandshake(RequeteHandshake requete)
     {
         try {
             byte[] cleSessionDecryptee;
 
-            System.out.println("Clé session cryptée reçue = ");
-            System.out.println(new String(requete.getDataSession()));
-
             cleSessionDecryptee = MyCrypto.DecryptAsymRSA(privateKey,requete.getDataSession());
-            SecretKey cleSession = new SecretKeySpec(cleSessionDecryptee,"DES");
-            System.out.println("Decryptage asymétrique de la clé de session...");
-            System.out.println(cleSession);
-            keySession = cleSession;
-            System.out.println("Crypte : " + requete.getDataSession());
+
+            keySession = new SecretKeySpec(cleSessionDecryptee,"DES");
+
+            return new ReponseHandshake(true);
         }catch (Exception e){
-            System.out.println("Erreur : " + e);
+            System.out.println("Erreur de TraiteRequeteHandshake : " + e);
+            return  new ReponseHandshake(false);
         }
-        return new ReponseLogout(true);
+
     }
 
+    /**
+     * Traite une requête cryptée pour la convertir en une simple requête
+     * @param requete La requête que l'on veut décrypter
+     * @return La requête décrypté
+     */
     private synchronized Requete TraiteRequeteCrypte(RequeteCrypte requete)
     {
         try {
@@ -178,7 +180,7 @@ public class VESPAPS implements Protocole {
             ByteArrayInputStream bais = new ByteArrayInputStream(messageDecrypte);
             ObjectInputStream dis = new ObjectInputStream(bais);
             Requete requeteDecrypt = (Requete) dis.readObject();
-            System.out.println("Je viens de le tranformer en : " + requeteDecrypt.getClass());
+            System.out.println("[SERVEUR] Transformation de la requete cypté en : " + requeteDecrypt.getClass());
             return requeteDecrypt;
 
         }catch (Exception e){
@@ -187,6 +189,11 @@ public class VESPAPS implements Protocole {
         return null;
     }
 
+    /**
+     * Permet de crypté une Reponse simple en Reponse crypté avec la clé de session
+     * @param reponseClaire Le Requete que l'on veut crypter
+     * @return Requete crypté
+     */
     private Reponse CrypteReponse(Reponse reponseClaire) {
         try {
             // Convertion de la requete en byte[]
@@ -198,11 +205,10 @@ public class VESPAPS implements Protocole {
             byte[] requeteClaire = baos.toByteArray();
 
             // Cryptage de la requete (qui est en byte[])
-            ReponseCrypte reponseCrypte = new ReponseCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
-
-            return reponseCrypte;
-        } catch (Exception ex) {
-            System.out.println("Erreur de VESPAPS" + ex);
+            return new ReponseCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
+        } catch (Exception e) {
+            System.out.println("Erreur de CrypteReponse : " + e);
+            return null;
         }
         return null;
     }
@@ -230,14 +236,13 @@ public class VESPAPS implements Protocole {
         return (sum % 10 == 0);
     }
     // *************************** METHODE RECUPERATION CLE ******************************************
+
     public static PrivateKey RecupereClePriveeServeur() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
         // Récupération de la clé privée de Jean-Marc dans le keystore de Jean-Marc
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("serveur.jks"),"azerty".toCharArray());
-        PrivateKey cle = (PrivateKey) ks.getKey("serveur","azerty".toCharArray());
-        System.out.println("*** Cle privee generee = " + cle);
 
-        return cle;
+        return (PrivateKey) ks.getKey("serveur","azerty".toCharArray());
     }
 
     public static PublicKey RecupereClePubliqueClient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
@@ -245,12 +250,16 @@ public class VESPAPS implements Protocole {
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("serveur.jks"),"azerty".toCharArray());
         X509Certificate certif = (X509Certificate)ks.getCertificate("client");
-        PublicKey cle = certif.getPublicKey();
-        return cle;
+        return certif.getPublicKey();
     }
 
     // *************************** METHODE D'AUTH et INTEGRITE *******************************
 
+    /**
+     * Permet de vérifier la signature du client avec sa clé publique
+     * @param requete la requete dont on veut vérifier l'authenticité
+     * @return True = authentique, false = pas authentique
+     */
     public boolean VerifySignature(RequeteGetFacturesSignature requete)
     {
         try {
@@ -264,12 +273,18 @@ public class VESPAPS implements Protocole {
 
             // Vérification de la signature reçue
             return s.verify(requete.getSignature());
-
-        } catch (Exception ex) {
-            System.out.println("Erreur de VESPAPS" + ex);
+        } catch (Exception e) {
+            System.out.println("Erreur de VerifySignature : " + e);
+            return false;
         }
         return false;
     }
+
+    /**
+     * Permet de généré un HMAC à partir de la requête
+     * @param requete Requete dont on veut généré le HMAC
+     * @return HMAC
+     */
     private byte[] GenerateHmac(ReponsePayFacturesHMAC requete){
         try {
             // Construction du HMAC

@@ -4,7 +4,6 @@ import JDBC.DatabaseConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,13 +32,24 @@ public class JdbcVESPAP {
         try {
             ResultSet rs = dbConnect.executeQuery("select mdp from clients where nom LIKE '" + login + "';");
             while (rs.next()) { // Si au moins une ligne correspond
-
                 return rs.getString("mdp");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return "";
+    }
+
+    public int getIdClient(String login){
+        try {
+            ResultSet rs = dbConnect.executeQuery("select id from clients where nom LIKE '" + login + "';");
+            while (rs.next()) { // Si au moins une ligne correspond
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
     }
 
     public List<Facture> getFacture(int idClient){

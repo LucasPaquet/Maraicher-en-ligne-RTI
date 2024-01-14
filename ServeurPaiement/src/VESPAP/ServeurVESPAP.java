@@ -44,9 +44,7 @@ public class ServeurVESPAP {
             Protocole protocole = new VESPAP(dbConnect);
             Protocole protocoleSecure = new VESPAPS(dbConnect);
 
-            System.out.println("[SERVER] Lancement des pools");
-
-            // non-secure
+            System.out.println("[SERVEUR] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
             // TLS
             threadServeurTLS = new ThreadServeurPoolTLS(portTLS,protocole,taillePoolTLS);

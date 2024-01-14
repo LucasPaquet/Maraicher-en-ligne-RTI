@@ -5,17 +5,11 @@ import VESPAP.Facture;
 import VESPAP.Vente;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,15 +22,15 @@ public class MainWindow extends JFrame{
     private JPanel JPaneFacture;
     private JTable tableFacture;
     private JButton btnBuy;
-    private JButton btnSearch;
+    private JButton btnReload;
     private JPanel JPaneMain;
     private JScrollPane JPaneScroolFacture;
-    private JTextField tfClient;
     private JPanel JpaneSearchClient;
     private JTable tableVente;
     private ClientVESPAPS cl;
     private String ip;
     private int port;
+    private int idClient;
 
     public MainWindow() {
 
@@ -45,17 +39,10 @@ public class MainWindow extends JFrame{
         // Connexion serveur
         try {
             cl = new ClientVESPAPS(ip, port);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (UnrecoverableKeyException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
 
 
         // pour qu'on ne puisse que selectionne une seule ligne a la fois
@@ -92,7 +79,7 @@ public class MainWindow extends JFrame{
             cl.VESPAPS_Logout();
             LogoutOK();
         });
-        btnSearch.addActionListener(actionEvent -> VESPAPGetFactures());
+        btnReload.addActionListener(actionEvent -> VESPAPGetFactures());
         btnBuy.addActionListener(actionEvent -> {
             VESPAP_Payer();
             VESPAPGetFactures();
@@ -100,12 +87,10 @@ public class MainWindow extends JFrame{
 
         // ******* Clique sur ligne du tableau *********
 
-        tableFacture.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    viderTableVente();
-                    VESPAP_GetVente();
-                }
+        tableFacture.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                viderTableVente();
+                VESPAP_GetVente();
             }
         });
     }
@@ -121,8 +106,7 @@ public class MainWindow extends JFrame{
 
         // Partie VESPAPS.Facture
         btnBuy.setEnabled(true);
-        btnSearch.setEnabled(true);
-        tfClient.setEnabled(true);
+        btnReload.setEnabled(true);
     }
 
     private void LogoutOK(){
@@ -136,9 +120,7 @@ public class MainWindow extends JFrame{
 
         // Partie VESPAPS.Facture
         btnBuy.setEnabled(false);
-        btnSearch.setEnabled(false);
-        tfClient.setEnabled(false);
-        tfClient.setText("");
+        btnReload.setEnabled(false);
         viderTableFacture();
         viderTableVente();
 
@@ -171,22 +153,26 @@ public class MainWindow extends JFrame{
             JOptionPane.showMessageDialog(null, "Remplisez les champs !", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        try {
+            idClient = cl.VESPAPS_Login(tfNom.getText(), tfMdp.getText()); // pour enregistrer dans la gui l'id du client
+            if (idClient != -1){
+                JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
+                LoginOK();
+                VESPAPGetFactures();
+            }
+            else
+                JOptionPane.showMessageDialog(null, "Les identifiants sont incorrects", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
 
-        if (cl.VESPAPS_Login(tfNom.getText(), tfMdp.getText())){
-            JOptionPane.showMessageDialog(null, "Vous êtes bien connecté", "Connection réussie !", JOptionPane.INFORMATION_MESSAGE);
-            LoginOK();
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Une erreur est survenu : " + e, "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
         }
-        else
-            JOptionPane.showMessageDialog(null, "Les identifiants sont incorrects", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
 
     }
 
     private void VESPAPGetFactures(){
         List<Facture> factures;
 
-        try { // si on arrive pas à convertir le chalos quantite en int
-
-            int idClient = Integer.parseInt(tfClient.getText());
+        try {
 
             if (idClient > 0){ // pour empecher les nombres negatif
                 factures = cl.VESPAPS_GetFactures(idClient);
@@ -251,7 +237,7 @@ public class MainWindow extends JFrame{
     }
 
     private void VESPAP_GetVente(){
-        List<Vente> ventes = null;
+        List<Vente> ventes;
         // Recuperation la ligne sélectionnée
         int selectedRow = tableFacture.getSelectedRow();
 
