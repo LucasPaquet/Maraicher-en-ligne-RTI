@@ -44,6 +44,7 @@ public class ClientVESPAPS {
 
     // *********************** METHODE VESPAPS **********************************
 
+
     public boolean VESPAPS_Handshake() throws NoSuchAlgorithmException, NoSuchProviderException, IOException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
         // Génération d'une clé de session
         Security.addProvider(new BouncyCastleProvider());
@@ -102,9 +103,6 @@ public class ClientVESPAPS {
                     return reponse.getIdClient();
                 }
             }
-
-
-
         } catch (Exception ex) {
             System.out.println("ERREUR 2" + ex);
         }
@@ -123,7 +121,7 @@ public class ClientVESPAPS {
             oos.writeObject(requeteCrypte);
 
             // Réception réponse
-            ReponseCrypte reponseCrypte = (ReponseCrypte) ois.readObject();
+            ois.readObject();
 
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR 2" + ex);
@@ -244,10 +242,11 @@ public class ClientVESPAPS {
             // Cryptage de la requete (qui est en byte[])
 
             return new RequeteCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
-        } catch (Exception e) {
-            System.out.println("Exception : " + e);
-            return null;
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
+
         }
+        return null;
     }
 
     // *************************** METHODE D'AUTH et INTEGRITE *******************************
@@ -269,10 +268,11 @@ public class ClientVESPAPS {
 
             return md.digest();
 
-        } catch (Exception e) {
-            System.out.println("Erreur de digest : " + e);
-            return null;
+
+        } catch (Exception ex) {
+            System.out.println("Erreur de VESPAPS" + ex);
         }
+        return null;
     }
 
     private byte[] SignFacture(int idClient){
@@ -289,6 +289,7 @@ public class ClientVESPAPS {
             System.out.println("Erreur de signature : " + e);
             return null;
         }
+        return null;
     }
     private boolean VerifyHmac(ReponsePayFacturesHMAC reponse) {
         try {

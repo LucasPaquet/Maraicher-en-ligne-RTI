@@ -3,14 +3,14 @@ package Tcp;
 import Tcp.Interface.Protocole;
 
 import java.io.IOException;
-import java.net.*;
-public class ThreadServeurPool extends ThreadServeur
-{
+import java.net.Socket;
+
+public class ThreadServeurPoolTLS extends ThreadServeurTLS{
     private FileAttente connexionsEnAttente;
     private ThreadGroup pool;
     private int taillePool;
 
-    public ThreadServeurPool(int port, Protocole protocole, int taillePool) throws IOException
+    public ThreadServeurPoolTLS(int port, Protocole protocole, int taillePool)
     {
         super(port, protocole);
 
@@ -25,7 +25,6 @@ public class ThreadServeurPool extends ThreadServeur
         // Création du pool de threads
         try
         {
-            System.out.println("[SERVEUR] Démarrage du thread Serveur (POOL)...");
             for (int i=0 ; i<taillePool ; i++)
                 new ThreadClientPool(protocole,connexionsEnAttente,pool).start();
         }
@@ -44,13 +43,10 @@ public class ThreadServeurPool extends ThreadServeur
                 csocket = ssocket.accept();
                 connexionsEnAttente.addConnexion(csocket);
             }
-            catch (Exception ex)
-            {
-               System.out.println("Erreur de ThreadServeurPool" + ex);
+            catch (Exception ex) {
+                System.out.println("Erreur de ThreadServeurPoolTLS" + ex);
             }
-
         }
         pool.interrupt();
     }
 }
-

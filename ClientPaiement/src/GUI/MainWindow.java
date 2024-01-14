@@ -10,10 +10,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 public class MainWindow extends JFrame{
     private JTextField tfNom;
@@ -31,16 +28,16 @@ public class MainWindow extends JFrame{
     private JPanel JpaneSearchClient;
     private JTable tableVente;
     private ClientVESPAP cl;
-    private String ip;
-    private int port;
+    private boolean tls;
 
+    public MainWindow(boolean cbtls) {
 
-    public MainWindow() {
-
-        initConfig();
+        tls = cbtls;
 
         // Connexion serveur
-        cl = new ClientVESPAP(ip, port);
+        cl = new ClientVESPAP(tls);
+
+
 
         // pour qu'on ne puisse que selectionne une seule ligne a la fois
         tableFacture.setDefaultEditor(Object.class, null);
@@ -144,7 +141,7 @@ public class MainWindow extends JFrame{
 
         if (cl.IsOosNull()){
             JOptionPane.showMessageDialog(null, "Vous n'êtes pas connecté au serveur", "Erreur de connexion", JOptionPane.ERROR_MESSAGE);
-            cl = new ClientVESPAP(ip, port); // on retente de se connecte au serveur
+            cl = new ClientVESPAP(tls); // on retente de se connecte au serveur
         }
 
         if(tfNom.getText().isEmpty() || tfMdp.getText().isEmpty()){
@@ -256,16 +253,6 @@ public class MainWindow extends JFrame{
 
     // *********************** LOGIQUE APPLICATION *****************************
 
-    public void initConfig() {
-        Properties properties = new Properties();
-        try (FileInputStream fis = new FileInputStream("src/config.properties")) {
-            properties.load(fis);
 
-            port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
-            ip = properties.getProperty("IP_PAIEMENT");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

@@ -1,27 +1,25 @@
 package VESPAP;
 
 import JDBC.DatabaseConnection;
+import Tcp.*;
 import Tcp.Interface.Protocole;
-import Tcp.ThreadServeur;
-import Tcp.ThreadServeurDemande;
-import Tcp.ThreadServeurPool;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class ServeurVESPAP {
     ThreadServeur threadServeur;
+    ThreadServeurTLS threadServeurTLS;
     ThreadServeur threadServeurSecure;
     DatabaseConnection dbConnect;
     private int port;
     private int taillePool;
+    private int portTLS;
+    private int taillePoolTLS;
     private int portSecure;
+
 
 
     public ServeurVESPAP() {
@@ -32,7 +30,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.148.212",
+                    "192.168.0.26",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -48,19 +46,18 @@ public class ServeurVESPAP {
 
             System.out.println("[SERVEUR] Lancement des pools");
             threadServeur = new ThreadServeurPool(port,protocole,taillePool);
+            // TLS
+            threadServeurTLS = new ThreadServeurPoolTLS(portTLS,protocole,taillePoolTLS);
+            // crypte
             threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
 
             threadServeur.start();
+            threadServeurTLS.start();
             threadServeurSecure.start();
         }
-        catch (NumberFormatException | UnrecoverableKeyException | CertificateException | KeyStoreException |
-               NoSuchAlgorithmException ex)
+        catch (Exception ex)
         {
-            System.out.println("ERREUR NumberFormatException : " + ex);
-        }
-        catch (IOException ex)
-        {
-            System.out.println("ERREUR IOException : " + ex);
+            System.out.println("ERREUR ServeruVESPAP : " + ex);
         }
     }
 
@@ -74,7 +71,9 @@ public class ServeurVESPAP {
 
             port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
             portSecure = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_SECURE"));
+            portTLS = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_TLS"));
             taillePool = Integer.parseInt(properties.getProperty("NB_THREAD_POOL"));
+            taillePoolTLS = Integer.parseInt(properties.getProperty("NB_THREAD_POOL_TLS"));
         } catch (IOException e) {
             System.out.println("ERREUR IOException : " + e);
         }

@@ -3,29 +3,64 @@ package VESPAP;
 import VESPAP.Reponse.*;
 import VESPAP.Requete.*;
 
+import javax.net.ssl.*;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.KeyStore;
 import java.util.List;
+import java.util.Properties;
 
 public class ClientVESPAP {
     private Socket socket;
     private String login;
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
+    private int port;
+    private int portTLS;
+    private String ip;
 
-    public ClientVESPAP(String ip, int port) {
+    public ClientVESPAP(boolean tls) {
+        initConfig();
         oos = null;
         ois = null;
 
         try {
-            socket = new Socket(ip, port);
+            if (tls){
+                KeyStore ServerKs = KeyStore.getInstance("JKS");
+
+                String FICHIER_KEYSTORE = "client.jks";
+
+                char[] PASSWD_KEYSTORE = "azerty".toCharArray();
+
+                FileInputStream ServerFK = new FileInputStream(FICHIER_KEYSTORE);
+
+                ServerKs.load(ServerFK, PASSWD_KEYSTORE);
+
+                SSLContext SslC = SSLContext.getInstance("TLSv1.2");
+
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+                char[] PASSWD_KEY = "azerty".toCharArray();
+                kmf.init(ServerKs, PASSWD_KEY);
+
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509"); tmf.init(ServerKs);
+
+
+                SslC.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+                SSLSocketFactory SslSFac = SslC.getSocketFactory();
+                socket = SslSFac.createSocket(ip, portTLS);
+            }else
+            {
+                socket = new Socket(ip, port);
+            }
 
             oos = new ObjectOutputStream(socket.getOutputStream());
             ois = new ObjectInputStream(socket.getInputStream());
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             System.out.println("ERREUR IO : " + ex);
         }
 
@@ -63,7 +98,7 @@ public class ClientVESPAP {
             oos.writeObject(requetes);
 
             // Réception réponse
-            ReponseLogout reponse = (ReponseLogout) ois.readObject();
+            ois.readObject();
         }
         catch (IOException | ClassNotFoundException ex) {
             System.out.println("ERREUR : " + ex);
@@ -129,5 +164,17 @@ public class ClientVESPAP {
 
     public boolean IsOosNull() {
         return oos == null;
+    }
+    public void initConfig() {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream("src/config.properties")) {
+            properties.load(fis);
+
+            port = Integer.parseInt(properties.getProperty("PORT_PAIEMENT"));
+            portTLS = Integer.parseInt(properties.getProperty("PORT_PAIEMENT_TLS"));
+            ip = properties.getProperty("IP_PAIEMENT");
+        } catch (IOException e) {
+            System.out.println("Erreur d'init config : " + e);
+        }
     }
 }

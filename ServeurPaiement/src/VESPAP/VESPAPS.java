@@ -92,13 +92,12 @@ public class VESPAPS implements Protocole {
             }
             else
                 return new ReponseLOGINId(false, -1);
-
-
         } catch (Exception e) {
             System.out.println("Erreur de LOGIN digest : " + e);
             return new ReponseLOGINId(false, -1);
-        }
 
+        }
+        return null;
     }
 
     private synchronized ReponseLogout TraiteRequeteLOGOUT(RequeteLOGOUT requete)//  throws FinConnexionException
@@ -206,12 +205,12 @@ public class VESPAPS implements Protocole {
             byte[] requeteClaire = baos.toByteArray();
 
             // Cryptage de la requete (qui est en byte[])
-
             return new ReponseCrypte(MyCrypto.CryptSymDES(keySession,requeteClaire));
         } catch (Exception e) {
             System.out.println("Erreur de CrypteReponse : " + e);
             return null;
         }
+        return null;
     }
     /**
      * Vérifie si le string passé en paramètre est un numéro de carte Visa valide (basé sur l'algorithme de Luhn)
@@ -274,11 +273,11 @@ public class VESPAPS implements Protocole {
 
             // Vérification de la signature reçue
             return s.verify(requete.getSignature());
-
         } catch (Exception e) {
             System.out.println("Erreur de VerifySignature : " + e);
             return false;
         }
+        return false;
     }
 
     /**
