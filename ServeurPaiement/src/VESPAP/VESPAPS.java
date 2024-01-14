@@ -97,7 +97,6 @@ public class VESPAPS implements Protocole {
             return new ReponseLOGINId(false, -1);
 
         }
-        return null;
     }
 
     private synchronized ReponseLogout TraiteRequeteLOGOUT(RequeteLOGOUT requete)//  throws FinConnexionException
@@ -210,7 +209,6 @@ public class VESPAPS implements Protocole {
             System.out.println("Erreur de CrypteReponse : " + e);
             return null;
         }
-        return null;
     }
     /**
      * Vérifie si le string passé en paramètre est un numéro de carte Visa valide (basé sur l'algorithme de Luhn)
@@ -277,7 +275,6 @@ public class VESPAPS implements Protocole {
             System.out.println("Erreur de VerifySignature : " + e);
             return false;
         }
-        return false;
     }
 
     /**

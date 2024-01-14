@@ -10,9 +10,9 @@ public class ThreadServeurPool extends ThreadServeur
     private ThreadGroup pool;
     private int taillePool;
 
-    public ThreadServeurPool(int port, Protocole protocole, int taillePool) throws IOException
+    public ThreadServeurPool(int port, Protocole protocole, int taillePool, boolean secure) throws IOException
     {
-        super(port, protocole);
+        super(port, protocole, secure);
 
         connexionsEnAttente = new FileAttente();
         pool = new ThreadGroup("POOL");
@@ -40,7 +40,6 @@ public class ThreadServeurPool extends ThreadServeur
             Socket csocket;
             try
             {
-                ssocket.setSoTimeout(2000);
                 csocket = ssocket.accept();
                 connexionsEnAttente.addConnexion(csocket);
             }

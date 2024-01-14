@@ -30,26 +30,21 @@ public class ClientVESPAP {
         try {
             if (tls){
                 KeyStore ServerKs = KeyStore.getInstance("JKS");
-
                 String FICHIER_KEYSTORE = "client.jks";
-
                 char[] PASSWD_KEYSTORE = "azerty".toCharArray();
-
                 FileInputStream ServerFK = new FileInputStream(FICHIER_KEYSTORE);
-
                 ServerKs.load(ServerFK, PASSWD_KEYSTORE);
 
-                SSLContext SslC = SSLContext.getInstance("TLSv1.2");
+                SSLContext SslC = SSLContext.getInstance("TLSv1.3");
 
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
                 char[] PASSWD_KEY = "azerty".toCharArray();
                 kmf.init(ServerKs, PASSWD_KEY);
 
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509"); tmf.init(ServerKs);
-
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+                tmf.init(ServerKs);
 
                 SslC.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-
                 SSLSocketFactory SslSFac = SslC.getSocketFactory();
                 socket = SslSFac.createSocket(ip, portTLS);
             }else

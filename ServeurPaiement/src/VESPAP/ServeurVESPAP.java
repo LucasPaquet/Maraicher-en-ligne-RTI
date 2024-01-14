@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class ServeurVESPAP {
     ThreadServeur threadServeur;
-    ThreadServeurTLS threadServeurTLS;
+    ThreadServeur threadServeurTLS;
     ThreadServeur threadServeurSecure;
     DatabaseConnection dbConnect;
     private int port;
@@ -30,7 +30,7 @@ public class ServeurVESPAP {
         // Connexion MySql
         try {
             dbConnect = new DatabaseConnection(DatabaseConnection.MYSQL,
-                    "192.168.0.26",
+                    "192.168.28.128",
                     "PourStudent",
                     "Student",
                     "PassStudent1_");
@@ -45,11 +45,9 @@ public class ServeurVESPAP {
             Protocole protocoleSecure = new VESPAPS(dbConnect);
 
             System.out.println("[SERVEUR] Lancement des pools");
-            threadServeur = new ThreadServeurPool(port,protocole,taillePool);
-            // TLS
-            threadServeurTLS = new ThreadServeurPoolTLS(portTLS,protocole,taillePoolTLS);
-            // crypte
-            threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure);
+            threadServeur = new ThreadServeurPool(port,protocole,taillePool, false); // non secure
+            threadServeurTLS = new ThreadServeurPool(portTLS,protocole,taillePoolTLS, true); // TLS
+            threadServeurSecure = new ThreadServeurDemande(portSecure, protocoleSecure); // secure Requete
 
             threadServeur.start();
             threadServeurTLS.start();

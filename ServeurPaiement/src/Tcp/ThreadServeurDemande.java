@@ -9,7 +9,7 @@ import java.net.SocketTimeoutException;
 public class ThreadServeurDemande extends ThreadServeur{
     public ThreadServeurDemande(int port, Protocole protocole) throws IOException
     {
-        super(port, protocole);
+        super(port, protocole, false);
     }
 
     @Override
