@@ -93,13 +93,13 @@ This is a Java client used by an employee who welcomes customers coming to pay a
 
 Upon launching the application, the user has the choice of whether to connect to the servers with a secure connection using TLSv1.2.
 
-![Screenshot of Java Payment Client interface](Img/ClientPaiment.png)
+![Screenshot of Java Payment Client interface](Img/ClientPaiement.png)
 
 ## Secure Payment Client (PaiementClientSecure)
 
 This is a modified version of the payment client as it allows store customers to pay an invoice from home before going to collect their order at the store. So the customer can connect, view their invoices, and already settle them at home. All communication with the server will be encrypted at the application level with the exchange of a session key asymmetrically encrypted using certificates.
 
-![Screenshot of Java Secure Payment Client interface](Img/ClientPaimentSecure.png)
+![Screenshot of Java Secure Payment Client interface](Img/ClientPaiementSecure.png)
 
 # Stock Management Section
 
@@ -114,7 +114,7 @@ It allows the user from their browser to change the price and quantity of stock 
 | GET    |                         | List of all items in JSON format             |
 | POST   | idItem, price, stock    | Yes or no in text format                      |
 
-![Screenshot of Web Service Stock Management Client interface](Img/WebService.png)
+![Screenshot of Web Service Stock Management Client interface](Img/ServiceWeb.png)
 
 
 ---
